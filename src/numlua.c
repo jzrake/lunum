@@ -70,9 +70,7 @@ static Complex ImaginaryUnit = I;
 
 int luaopen_numlua(lua_State *L)
 {
-  printf("loading numlua... %d\n", (int)L);
   lua_pop(L, 1); // don't need the argument 'numlua'
-
 
   // Create the 'array' metatable
   // ---------------------------------------------------------------------------

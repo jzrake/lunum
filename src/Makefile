@@ -1,7 +1,21 @@
 
 
+
+
+OSNAME := $(shell uname)
+
+# Configuring lua, fft, and glfw flags
+# ------------------------------------------------------------------------------
+ifeq ($(OSNAME), Linux)
+SO = $(CC) -O -shared
+endif
+
+ifeq ($(OSNAME), Darwin)
+SO = $(CC) -O -bundle -undefined dynamic_lookup 
+endif
+
 LUA_HOME = /usr/local
-CFLAGS = -Wall -O2
+CFLAGS = -Wall -O2 -fPIC
 
 SRC_C = $(wildcard *.c)
 OBJ_C = $(SRC_C:.c=.o)
@@ -19,7 +33,7 @@ numlua.o : numlua.c
 
 
 $(NUMLUA_SO) : $(OBJ_C)
-	$(CC) -bundle -undefined dynamic_lookup -o $(NUMLUA_SO) $^
+	$(SO) -o $(NUMLUA_SO) $^
 
 clean :
 	rm -f $(OBJ_C) $(NUMLUA_SO)
