@@ -33,35 +33,35 @@
 
 
 
-int luaC_numlua_array(lua_State *L);
-int luaC_numlua_zeros(lua_State *L);
+static int luaC_numlua_array(lua_State *L);
+static int luaC_numlua_zeros(lua_State *L);
 
-int luaC_array__tostring(lua_State *L);
-int luaC_array__len(lua_State *L);
-int luaC_array__index(lua_State *L);
-int luaC_array__newindex(lua_State *L);
-int luaC_array__add(lua_State *L);
-int luaC_array__sub(lua_State *L);
-int luaC_array__mul(lua_State *L);
-int luaC_array__div(lua_State *L);
-int luaC_array__gc(lua_State *L);
-
-
-int luaC_complex__tostring(lua_State *L);
-int luaC_complex__add(lua_State *L);
-int luaC_complex__sub(lua_State *L);
-int luaC_complex__mul(lua_State *L);
-int luaC_complex__div(lua_State *L);
-int luaC_complex__pow(lua_State *L);
+static int luaC_array__tostring(lua_State *L);
+static int luaC_array__len(lua_State *L);
+static int luaC_array__index(lua_State *L);
+static int luaC_array__newindex(lua_State *L);
+static int luaC_array__add(lua_State *L);
+static int luaC_array__sub(lua_State *L);
+static int luaC_array__mul(lua_State *L);
+static int luaC_array__div(lua_State *L);
+static int luaC_array__pow(lua_State *L);
+static int luaC_array__gc(lua_State *L);
 
 
-void luaU_stack_dump(lua_State *L);
-static int luaU_array_binary_op1(lua_State *L, enum ArrayOperation op);
-static int luaU_array_binary_op2(lua_State *L, enum ArrayOperation op);
-static void *luaU_assign_from_type(lua_State *L, enum ArrayType T);
+static int luaC_complex__tostring(lua_State *L);
+static int luaC_complex__add(lua_State *L);
+static int luaC_complex__sub(lua_State *L);
+static int luaC_complex__mul(lua_State *L);
+static int luaC_complex__div(lua_State *L);
+static int luaC_complex__pow(lua_State *L);
 
-static int luaU_complex_binary_op1(lua_State *L, enum ArrayOperation op);
-static int luaU_complex_binary_op2(lua_State *L, enum ArrayOperation op);
+
+static int   _array_binary_op1(lua_State *L, enum ArrayOperation op);
+static int   _array_binary_op2(lua_State *L, enum ArrayOperation op);
+static void *_array_tovalue(lua_State *L, enum ArrayType T);
+
+static int _complex_binary_op1(lua_State *L, enum ArrayOperation op);
+static int _complex_binary_op2(lua_State *L, enum ArrayOperation op);
 
 static Complex ImaginaryUnit = I;
 
@@ -85,6 +85,7 @@ int luaopen_numlua(lua_State *L)
   LUA_NEW_METAMETHOD(L, array, sub);
   LUA_NEW_METAMETHOD(L, array, mul);
   LUA_NEW_METAMETHOD(L, array, div);
+  LUA_NEW_METAMETHOD(L, array, pow);
   LUA_NEW_METAMETHOD(L, array, gc);
   lua_pop(L, 1);
 
@@ -148,7 +149,7 @@ int luaC_array__tostring(lua_State *L)
     char s[64];
 
     switch (A->type) {
-    case ARRAY_TYPE_CHAR    : sprintf(s, "%c" , ((char   *)A->data)[n]); break;
+    case ARRAY_TYPE_CHAR    : sprintf(s, "%d" , ((char   *)A->data)[n]); break;
     case ARRAY_TYPE_SHORT   : sprintf(s, "%d" , ((short  *)A->data)[n]); break;
     case ARRAY_TYPE_INT     : sprintf(s, "%d" , ((int    *)A->data)[n]); break;
     case ARRAY_TYPE_LONG    : sprintf(s, "%ld", ((long   *)A->data)[n]); break;
@@ -218,29 +219,29 @@ int luaC_array__newindex(lua_State *L)
     luaL_error(L, "index %d out of bounds on array of length %d", n, A->size);
   }
 
-  void *val = luaU_assign_from_type(L, T);
+  void *val = _array_tovalue(L, T);
   memcpy(A->data + array_sizeof(T)*n, val, array_sizeof(T));
   free(val);
 
   return 0;
 }
 
-int luaC_array__add(lua_State *L) { return luaU_array_binary_op1(L, ARRAY_OP_ADD); }
-int luaC_array__sub(lua_State *L) { return luaU_array_binary_op1(L, ARRAY_OP_SUB); }
-int luaC_array__mul(lua_State *L) { return luaU_array_binary_op1(L, ARRAY_OP_MUL); }
-int luaC_array__div(lua_State *L) { return luaU_array_binary_op1(L, ARRAY_OP_DIV); }
+int luaC_array__add(lua_State *L) { return _array_binary_op1(L, ARRAY_OP_ADD); }
+int luaC_array__sub(lua_State *L) { return _array_binary_op1(L, ARRAY_OP_SUB); }
+int luaC_array__mul(lua_State *L) { return _array_binary_op1(L, ARRAY_OP_MUL); }
+int luaC_array__div(lua_State *L) { return _array_binary_op1(L, ARRAY_OP_DIV); }
+int luaC_array__pow(lua_State *L) { return _array_binary_op1(L, ARRAY_OP_POW); }
 
 
 
 
 
-
-int luaU_array_binary_op1(lua_State *L, enum ArrayOperation op)
+int _array_binary_op1(lua_State *L, enum ArrayOperation op)
 {
   if (!lua_isuserdata(L, 1)) {
 
     struct Array *B = (struct Array*) luaL_checkudata(L, 2, "array");
-    void *val = luaU_assign_from_type(L, B->type);
+    void *val = _array_tovalue(L, B->type);
 
     lua_getglobal(L, "numlua");
     lua_getfield(L, -1, "zeros");
@@ -258,7 +259,7 @@ int luaU_array_binary_op1(lua_State *L, enum ArrayOperation op)
   if (!lua_isuserdata(L, 2)) {
 
     struct Array *A = (struct Array*) luaL_checkudata(L, 1, "array");
-    void *val = luaU_assign_from_type(L, A->type);
+    void *val = _array_tovalue(L, A->type);
 
     lua_getglobal(L, "numlua");
     lua_getfield(L, -1, "zeros");
@@ -273,11 +274,10 @@ int luaU_array_binary_op1(lua_State *L, enum ArrayOperation op)
     lua_pop(L, 1);
   }
 
-  return luaU_array_binary_op2(L, op);
+  return _array_binary_op2(L, op);
 }
 
-
-int luaU_array_binary_op2(lua_State *L, enum ArrayOperation op)
+int _array_binary_op2(lua_State *L, enum ArrayOperation op)
 {
   struct Array *A = (struct Array*) luaL_checkudata(L, 1, "array");
   struct Array *B = (struct Array*) luaL_checkudata(L, 2, "array");
@@ -306,7 +306,7 @@ int luaU_array_binary_op2(lua_State *L, enum ArrayOperation op)
   return 1;
 }
 
-void *luaU_assign_from_type(lua_State *L, enum ArrayType T)
+void *_array_tovalue(lua_State *L, enum ArrayType T)
 {
   Complex x;
 
@@ -347,7 +347,7 @@ int luaC_numlua_array(lua_State *L)
     lua_pushnumber(L, i+1);
     lua_gettable(L, 1);
 
-    void *val = luaU_assign_from_type(L, T);
+    void *val = _array_tovalue(L, T);
     memcpy(A->data + array_sizeof(T)*i, val, array_sizeof(T));
     free(val);
 
@@ -384,7 +384,7 @@ int luaC_complex__tostring(lua_State *L)
   return 1;
 }
 
-int luaU_complex_binary_op1(lua_State *L, enum ArrayOperation op)
+int _complex_binary_op1(lua_State *L, enum ArrayOperation op)
 {
   if (!lua_isuserdata(L, 1)) {
     double a = lua_tonumber(L, 1);
@@ -406,10 +406,10 @@ int luaU_complex_binary_op1(lua_State *L, enum ArrayOperation op)
     lua_replace(L, 2);
   }
 
-  return luaU_complex_binary_op2(L, op);
+  return _complex_binary_op2(L, op);
 }
 
-int luaU_complex_binary_op2(lua_State *L, enum ArrayOperation op)
+int _complex_binary_op2(lua_State *L, enum ArrayOperation op)
 {
   Complex v = *((Complex*) luaL_checkudata(L, 1, "complex"));
   Complex w = *((Complex*) luaL_checkudata(L, 2, "complex"));
@@ -428,44 +428,10 @@ int luaU_complex_binary_op2(lua_State *L, enum ArrayOperation op)
 
   return 1;
 }
-int luaC_complex__add(lua_State *L) { return luaU_complex_binary_op1(L, ARRAY_OP_ADD); }
-int luaC_complex__sub(lua_State *L) { return luaU_complex_binary_op1(L, ARRAY_OP_SUB); }
-int luaC_complex__mul(lua_State *L) { return luaU_complex_binary_op1(L, ARRAY_OP_MUL); }
-int luaC_complex__div(lua_State *L) { return luaU_complex_binary_op1(L, ARRAY_OP_DIV); }
-int luaC_complex__pow(lua_State *L) { return luaU_complex_binary_op1(L, ARRAY_OP_POW); }
 
 
-
-void luaU_stack_dump(lua_State *L)
-{
-  const int top = lua_gettop(L);
-  printf("lua stack size: %d ... (", top);
-  int i;
-  for (i=1; i<=top; ++i) {
-
-    int t = lua_type(L, i);
-
-    switch (t) {
-
-    case LUA_TSTRING:
-      printf("`%s'", lua_tostring(L, i));
-      break;
-
-    case LUA_TBOOLEAN:
-      printf(lua_toboolean(L, i) ? "true" : "false");
-      break;
-
-    case LUA_TNUMBER:
-      printf("%g", lua_tonumber(L, i));
-      break;
-
-    default:
-      printf("%s", lua_typename(L, t));
-      break;
-
-    }
-    printf(", ");
-  }
-  printf(")\n");
-}
-
+int luaC_complex__add(lua_State *L) { return _complex_binary_op1(L, ARRAY_OP_ADD); }
+int luaC_complex__sub(lua_State *L) { return _complex_binary_op1(L, ARRAY_OP_SUB); }
+int luaC_complex__mul(lua_State *L) { return _complex_binary_op1(L, ARRAY_OP_MUL); }
+int luaC_complex__div(lua_State *L) { return _complex_binary_op1(L, ARRAY_OP_DIV); }
+int luaC_complex__pow(lua_State *L) { return _complex_binary_op1(L, ARRAY_OP_POW); }

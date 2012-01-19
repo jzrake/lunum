@@ -1,35 +1,9 @@
 
 
+
 #include <stdlib.h>
-#include <stdio.h>
 #include <math.h>
-#include "array.h"
-
-
-#ifdef __MAIN__
-int main()
-{
-  struct Array A = array_new_zeros(10, ARRAY_TYPE_INT);
-  struct Array B = array_new_copy(&A, ARRAY_TYPE_DOUBLE);
-
-  for (size_t i=0; i<A.size; ++i) {
-    ((int*)A.data)[i] = i;
-  }
-
-  array_assign_from_array(&B, &A);
-
-  for (size_t i=0; i<B.size; ++i) {
-    printf("%f\n", ((double*)B.data)[i]);
-  }
-
-  array_del(&A);
-  array_del(&B);
-
-  return 0;
-}
-#endif
-
-
+#include "numarray.h"
 
 
 
@@ -80,7 +54,6 @@ void array_del(struct Array *A)
   A->size = 0;
   free(A->data);
 }
-
 
 void array_binary_op(const struct Array *A, const struct Array *B,
 		     struct Array *C, enum ArrayOperation op)
@@ -149,7 +122,6 @@ void array_binary_op(const struct Array *A, const struct Array *B,
   }
 }
 
-
 size_t array_sizeof(enum ArrayType T)
 {
   switch (T) {
@@ -163,7 +135,6 @@ size_t array_sizeof(enum ArrayType T)
   default: return 0;
   }
 }
-
 
 void array_assign_from_scalar(struct Array *A, const void *val)
 {
