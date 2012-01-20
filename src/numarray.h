@@ -3,6 +3,7 @@
 #ifndef __Array_HEADER__
 #define __Array_HEADER__
 
+#include <stdlib.h>
 #include <complex.h>
 
 typedef double complex Complex;

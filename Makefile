@@ -22,20 +22,22 @@ INSTALL_HOME := $(shell pwd)
 LIB_SO      = lunar.so
 LIB_A       = liblunar.a
 
-LUNAR_SO   = src/$(LIB_SO)
-LUNAR_A    = src/$(LIB_A)
+LUNAR_SO    = src/$(LIB_SO)
+LUNAR_A     = src/$(LIB_A)
 
 INSTALL_SO  = $(INSTALL_HOME)/lib/$(LIB_SO)
 INSTALL_A   = $(INSTALL_HOME)/lib/$(LIB_A)
 
-H1 = lunar_capi.h
+H1 = lunar.h
 H2 = numarray.h
 
 HEADERS = \
 	$(INSTALL_HOME)/include/$(H1) \
 	$(INSTALL_HOME)/include/$(H2)
 
-default : $(LUNAR_SO) $(LUNAR_A)
+TESTS = tests
+
+default : $(LUNAR_SO) $(LUNAR_A) $(TESTS)
 
 install : $(INSTALL_SO) $(INSTALL_A) $(HEADERS)
 
@@ -53,6 +55,9 @@ $(LUNAR_SO) : FORCE
 $(LUNAR_A) : FORCE
 	@make -C src $(LIB_A)
 
+$(TESTS) : FORCE
+	@make -C tests
+
 $(INSTALL_SO) : $(LUNAR_SO)
 	mkdir -p $(INSTALL_HOME)/lib
 	cp $(LUNAR_SO) $(INSTALL_HOME)/lib
@@ -62,8 +67,8 @@ $(INSTALL_A) : $(LUNAR_A)
 	cp $(LUNAR_A) $(INSTALL_HOME)/lib
 
 clean :
+	make -C tests clean
 	make -C src clean
 	rm -rf lib include
 
 FORCE :
-

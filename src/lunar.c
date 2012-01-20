@@ -35,6 +35,11 @@
 
 static int luaC_lunar_array(lua_State *L);
 static int luaC_lunar_zeros(lua_State *L);
+static int luaC_lunar_dtype(lua_State *L);
+//static int luaC_lunar_sin(lua_State *L);
+//static int luaC_lunar_cos(lua_State *L);
+//static int luaC_lunar_tan(lua_State *L);
+
 
 static int luaC_array__tostring(lua_State *L);
 static int luaC_array__len(lua_State *L);
@@ -59,6 +64,7 @@ static int luaC_complex__pow(lua_State *L);
 static int   _array_binary_op1(lua_State *L, enum ArrayOperation op);
 static int   _array_binary_op2(lua_State *L, enum ArrayOperation op);
 static void *_array_tovalue(lua_State *L, enum ArrayType T);
+
 
 static int _complex_binary_op1(lua_State *L, enum ArrayOperation op);
 static int _complex_binary_op2(lua_State *L, enum ArrayOperation op);
@@ -105,6 +111,7 @@ int luaopen_lunar(lua_State *L)
   lua_newtable(L);
   LUA_NEW_MODULEMETHOD(L, lunar, array);
   LUA_NEW_MODULEMETHOD(L, lunar, zeros);
+  LUA_NEW_MODULEMETHOD(L, lunar, dtype);
 
   LUA_NEW_MODULEDATA(L, ARRAY_TYPE_CHAR   , char);
   LUA_NEW_MODULEDATA(L, ARRAY_TYPE_SHORT  , short);
@@ -331,7 +338,6 @@ void *_array_tovalue(lua_State *L, enum ArrayType T)
 }
 
 
-
 int luaC_lunar_array(lua_State *L)
 {
   const size_t N = lua_objlen(L, 1);
@@ -373,7 +379,12 @@ int luaC_lunar_zeros(lua_State *L)
   return 1;
 }
 
-
+int luaC_lunar_dtype(lua_State *L)
+{
+  struct Array *A = (struct Array*) luaL_checkudata(L, 1, "array");
+  lua_pushstring(L, array_typename(A->type));
+  return 1;
+}
 
 int luaC_complex__tostring(lua_State *L)
 {
