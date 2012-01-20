@@ -163,7 +163,6 @@ int luaC_array__tostring(lua_State *L)
     case ARRAY_TYPE_COMPLEX : sprintf(s, "%g+%gj",
 				      creal(((Complex*)A->data)[n]),
 				      cimag(((Complex*)A->data)[n])); break;
-
     }
 
     if (n == A->size-1) {
@@ -315,27 +314,8 @@ void *_array_tovalue(lua_State *L, enum ArrayType T)
 
 int luaC_lunar_array(lua_State *L)
 {
-  const size_t N = lua_objlen(L, 1);
   const size_t T = luaL_optinteger(L, 2, ARRAY_TYPE_DOUBLE);
-
-  struct Array *A = (struct Array*) lua_newuserdata(L, sizeof(struct Array));
-  *A = array_new_zeros(N, T);
-
-  for (size_t i=0; i<A->size; ++i) {
-
-    lua_pushnumber(L, i+1);
-    lua_gettable(L, 1);
-
-    void *val = _array_tovalue(L, T);
-    memcpy(A->data + array_sizeof(T)*i, val, array_sizeof(T));
-    free(val);
-
-    lua_pop(L, 1);
-  }
-
-  luaL_getmetatable(L, "array");
-  lua_setmetatable(L, -2);
-
+  lunar_upcast(L, 1, T, 1);
   return 1;
 }
 
