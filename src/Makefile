@@ -21,26 +21,26 @@ endif
 # ------------------------------------------------------------------------------
 
 
-NUMLUA_SO = numlua.so
-NUMLUA_A  = libnumlua.a
+LUNAR_SO = lunar.so
+LUNAR_A  = liblunar.a
 
 
-default : $(NUMLUA_A) $(NUMLUA_SO)
+default : $(LUNAR_A) $(LUNAR_SO)
 
 %.o : %.c
 	$(CC) $(CFLAGS) -std=c99 -c $<
 
-numlua.o : numlua.c
+lunar.o : lunar.c
 	$(CC) $(CFLAGS) -std=c99 -c $< -I$(LUA_HOME)/include
 
-numlua_capi.o : numlua_capi.c
+lunar_capi.o : lunar_capi.c
 	$(CC) $(CFLAGS) -std=c99 -c $< -I$(LUA_HOME)/include
 
-$(NUMLUA_A) : numarray.o numlua.o numlua_capi.o
+$(LUNAR_A) : numarray.o lunar.o lunar_capi.o
 	$(AR) $@ $?
 
-$(NUMLUA_SO) : numarray.o numlua.o
-	$(SO) -o $(NUMLUA_SO) $^
+$(LUNAR_SO) : numarray.o lunar.o
+	$(SO) -o $(LUNAR_SO) $^
 
 clean :
-	rm -f *.o $(NUMLUA_A) $(NUMLUA_SO)
+	rm -f *.o $(LUNAR_A) $(LUNAR_SO)

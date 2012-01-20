@@ -4,25 +4,23 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "numlua_capi.h"
+#include "lunar_capi.h"
 #include "lauxlib.h"
 
 
-void *numlua_checkarray(lua_State *L, int pos, enum ArrayType T, size_t *N)
+void *lunar_checkarray(lua_State *L, int pos, enum ArrayType T, size_t *N)
 {
   lua_pushvalue(L, pos);
   const int top = lua_gettop(L);
 
   if (lua_type(L, -1) == LUA_TTABLE) {
-    lua_getglobal(L, "numlua");
+    lua_getglobal(L, "lunar");
     lua_getfield(L, -1, "array");
     lua_insert(L, -3);
     lua_pop(L, 1);
     lua_pushnumber(L, T);
     lua_call(L, 2, 1);
   }
-
-  printf("%s\n", array_typename(T));
 
   struct Array *A = (struct Array*) luaL_checkudata(L, top, "array");
   if (A->type != T) {
@@ -36,7 +34,7 @@ void *numlua_checkarray(lua_State *L, int pos, enum ArrayType T, size_t *N)
 }
 
 
-void numlua_pusharray(lua_State *L, void *data, enum ArrayType T, size_t N)
+void lunar_pusharray(lua_State *L, void *data, enum ArrayType T, size_t N)
 {
   struct Array *A = (struct Array*) lua_newuserdata(L, sizeof(struct Array));
 

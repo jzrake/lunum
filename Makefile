@@ -1,35 +1,41 @@
 
-
-
 # ------------------------------------------------------------------------------
 #
-# command line macros:
+# Command line macros:
 #
 # INSTALL_HOME ... place to put includes and library files
 # LUA_HOME     ... where to find lua header and library files 
+#
+# If this is a local build, then you should set the environment variable
+# LUA_CPATH to the local directory. On bash, this will work:
+#
+# export LUA_CPATH="$LUA_CPATH;`pwd`/lib/?.so"
+#
+# Absolute paths may be used instead, which will be useful if you are doing a
+# remote install.
 #
 # ------------------------------------------------------------------------------
 
 
 INSTALL_HOME := $(shell pwd)
 
-LIB_SO      = numlua.so
-LIB_A       = libnumlua.a
+LIB_SO      = lunar.so
+LIB_A       = liblunar.a
 
-NUMLUA_SO   = src/$(LIB_SO)
-NUMLUA_A    = src/$(LIB_A)
+LUNAR_SO   = src/$(LIB_SO)
+LUNAR_A    = src/$(LIB_A)
 
 INSTALL_SO  = $(INSTALL_HOME)/lib/$(LIB_SO)
 INSTALL_A   = $(INSTALL_HOME)/lib/$(LIB_A)
 
-H1 = numlua_capi.h
+H1 = lunar_capi.h
 H2 = numarray.h
 
 HEADERS = \
 	$(INSTALL_HOME)/include/$(H1) \
 	$(INSTALL_HOME)/include/$(H2)
 
-default : $(NUMLUA_SO) $(NUMLUA_A)
+default : $(LUNAR_SO) $(LUNAR_A)
 
 install : $(INSTALL_SO) $(INSTALL_A) $(HEADERS)
 
@@ -41,19 +47,19 @@ $(INSTALL_HOME)/include/$(H2) :
 	mkdir -p $(INSTALL_HOME)/include
 	cp src/$(H2) $(INSTALL_HOME)/include
 
-$(NUMLUA_SO) : FORCE
+$(LUNAR_SO) : FORCE
 	@make -C src $(LIB_SO)
 
-$(NUMLUA_A) : FORCE
+$(LUNAR_A) : FORCE
 	@make -C src $(LIB_A)
 
-$(INSTALL_SO) : $(NUMLUA_SO)
+$(INSTALL_SO) : $(LUNAR_SO)
 	mkdir -p $(INSTALL_HOME)/lib
-	cp $(NUMLUA_SO) $(INSTALL_HOME)/lib
+	cp $(LUNAR_SO) $(INSTALL_HOME)/lib
 
-$(INSTALL_A) : $(NUMLUA_A)
+$(INSTALL_A) : $(LUNAR_A)
 	mkdir -p $(INSTALL_HOME)/lib
-	cp $(NUMLUA_A) $(INSTALL_HOME)/lib
+	cp $(LUNAR_A) $(INSTALL_HOME)/lib
 
 clean :
 	make -C src clean

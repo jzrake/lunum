@@ -33,8 +33,8 @@
 
 
 
-static int luaC_numlua_array(lua_State *L);
-static int luaC_numlua_zeros(lua_State *L);
+static int luaC_lunar_array(lua_State *L);
+static int luaC_lunar_zeros(lua_State *L);
 
 static int luaC_array__tostring(lua_State *L);
 static int luaC_array__len(lua_State *L);
@@ -68,7 +68,7 @@ static Complex ImaginaryUnit = I;
 
 
 
-int luaopen_numlua(lua_State *L)
+int luaopen_lunar(lua_State *L)
 {
   lua_settop(L, 0); // start with an empty stack
 
@@ -100,11 +100,11 @@ int luaopen_numlua(lua_State *L)
   lua_pop(L, 1);
 
 
-  // Create the 'numlua' table
+  // Create the 'lunar' table
   // ---------------------------------------------------------------------------
   lua_newtable(L);
-  LUA_NEW_MODULEMETHOD(L, numlua, array);
-  LUA_NEW_MODULEMETHOD(L, numlua, zeros);
+  LUA_NEW_MODULEMETHOD(L, lunar, array);
+  LUA_NEW_MODULEMETHOD(L, lunar, zeros);
 
   LUA_NEW_MODULEDATA(L, ARRAY_TYPE_CHAR   , char);
   LUA_NEW_MODULEDATA(L, ARRAY_TYPE_SHORT  , short);
@@ -120,7 +120,7 @@ int luaopen_numlua(lua_State *L)
   lua_setmetatable(L, -2);
   lua_setfield(L, 1, "I");
 
-  lua_setglobal(L, "numlua");
+  lua_setglobal(L, "lunar");
 
 
   return 0;
@@ -241,7 +241,7 @@ int _array_binary_op1(lua_State *L, enum ArrayOperation op)
     struct Array *B = (struct Array*) luaL_checkudata(L, 2, "array");
     void *val = _array_tovalue(L, B->type);
 
-    lua_getglobal(L, "numlua");
+    lua_getglobal(L, "lunar");
     lua_getfield(L, -1, "zeros");
     lua_pushnumber(L, B->size);
     lua_pushnumber(L, B->type);
@@ -259,7 +259,7 @@ int _array_binary_op1(lua_State *L, enum ArrayOperation op)
     struct Array *A = (struct Array*) luaL_checkudata(L, 1, "array");
     void *val = _array_tovalue(L, A->type);
 
-    lua_getglobal(L, "numlua");
+    lua_getglobal(L, "lunar");
     lua_getfield(L, -1, "zeros");
     lua_pushnumber(L, A->size);
     lua_pushnumber(L, A->type);
@@ -332,7 +332,7 @@ void *_array_tovalue(lua_State *L, enum ArrayType T)
 
 
 
-int luaC_numlua_array(lua_State *L)
+int luaC_lunar_array(lua_State *L)
 {
   const size_t N = lua_objlen(L, 1);
   const size_t T = luaL_optinteger(L, 2, ARRAY_TYPE_DOUBLE);
@@ -358,7 +358,7 @@ int luaC_numlua_array(lua_State *L)
   return 1;
 }
 
-int luaC_numlua_zeros(lua_State *L)
+int luaC_lunar_zeros(lua_State *L)
 {
   const size_t N = luaL_checkinteger(L, 1);
   const size_t T = luaL_optinteger(L, 2, ARRAY_TYPE_DOUBLE);
