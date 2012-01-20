@@ -1,10 +1,15 @@
 
 
 
+OSNAME       := $(shell uname)
+INSTALL_HOME := $(shell pwd)/..
 
-OSNAME := $(shell uname)
+LUA_HOME      = /usr/local
+CFLAGS        = -Wall -O2 -fPIC
 
-# Configuring lua, fft, and glfw flags
+
+
+# Configuration for the host platform
 # ------------------------------------------------------------------------------
 ifeq ($(OSNAME), Linux)
 SO = $(CC) -O -shared
@@ -14,26 +19,23 @@ ifeq ($(OSNAME), Darwin)
 SO = $(CC) -O -bundle -undefined dynamic_lookup 
 endif
 
-LUA_HOME = /usr/local
-CFLAGS = -Wall -O2 -fPIC
 
-SRC_C = $(wildcard *.c)
-OBJ_C = $(SRC_C:.c=.o)
+OBJ_C = numarray.o numlua.o
+NUMLUA_SO = $(INSTALL_HOME)/numlua.so
 
-NUMLUA_SO = ../lib/numlua.so
+default : $(NUMLUA_SO) numlua_api
 
-default : $(NUMLUA_SO)
-
-
-numarray.o : numarray.c
+%.o : %.c
 	$(CC) $(CFLAGS) -std=c99 -c $<
 
 numlua.o : numlua.c
 	$(CC) $(CFLAGS) -std=c99 -c $< -I$(LUA_HOME)/include
 
+numlua_api : numlua_api.c numlua.c numarray.c
+	$(CC) $(CFLAGS) -std=c99 $< -o $@ -L$(LUA_HOME)/lib -I$(LUA_HOME)/include -llua
 
 $(NUMLUA_SO) : $(OBJ_C)
 	$(SO) -o $(NUMLUA_SO) $^
 
 clean :
-	rm -f $(OBJ_C) $(NUMLUA_SO)
+	rm -f $(OBJ_C) $(NUMLUA_SO) numlua_api

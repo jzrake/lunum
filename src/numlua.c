@@ -70,7 +70,7 @@ static Complex ImaginaryUnit = I;
 
 int luaopen_numlua(lua_State *L)
 {
-  lua_pop(L, 1); // don't need the argument 'numlua'
+  lua_settop(L, 0); // start with an empty stack
 
   // Create the 'array' metatable
   // ---------------------------------------------------------------------------
