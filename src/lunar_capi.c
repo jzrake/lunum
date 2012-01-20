@@ -8,7 +8,6 @@
 #include "lauxlib.h"
 
 
-static void *_array_tovalue(lua_State *L, enum ArrayType T);
 
 void _stack_dump(lua_State *L);
 
@@ -103,7 +102,7 @@ int lunar_upcast(lua_State *L, int pos, enum ArrayType T, size_t N)
       lua_pushnumber(L, i+1);
       lua_gettable(L, pos);
 
-      void *val = _array_tovalue(L, T);
+      void *val = lunar_tovalue(L, T);
       memcpy(A.data + array_sizeof(T)*i, val, array_sizeof(T));
       free(val);
 
@@ -199,7 +198,7 @@ void _stack_dump(lua_State *L)
 
 
 
-void *_array_tovalue(lua_State *L, enum ArrayType T)
+void *lunar_tovalue(lua_State *L, enum ArrayType T)
 {
   Complex x;
 

@@ -63,7 +63,7 @@ static int luaC_complex__pow(lua_State *L);
 
 static int   _array_binary_op1(lua_State *L, enum ArrayOperation op);
 static int   _array_binary_op2(lua_State *L, enum ArrayOperation op);
-static void *_array_tovalue(lua_State *L, enum ArrayType T);
+
 
 
 static int _complex_binary_op1(lua_State *L, enum ArrayOperation op);
@@ -223,7 +223,7 @@ int luaC_array__newindex(lua_State *L)
     luaL_error(L, "index %d out of bounds on array of length %d", n, A->size);
   }
 
-  void *val = _array_tovalue(L, T);
+  void *val = lunar_tovalue(L, T);
   memcpy(A->data + array_sizeof(T)*n, val, array_sizeof(T));
   free(val);
 
@@ -283,32 +283,6 @@ int _array_binary_op2(lua_State *L, enum ArrayOperation op)
   if (B->type != T) array_del(&B_);
 
   return 1;
-}
-
-void *_array_tovalue(lua_State *L, enum ArrayType T)
-{
-  Complex x;
-
-  if (lua_isnumber(L, -1)) {
-    x = lua_tonumber(L, -1);
-  }
-  else {
-    x = *((Complex*) luaL_checkudata(L, -1, "complex"));
-  }
-
-  void *y = malloc(array_sizeof(T));
-
-  switch (T) {
-  case ARRAY_TYPE_CHAR    : *((char   *)y) = x; break;
-  case ARRAY_TYPE_SHORT   : *((short  *)y) = x; break;
-  case ARRAY_TYPE_INT     : *((int    *)y) = x; break;
-  case ARRAY_TYPE_LONG    : *((long   *)y) = x; break;
-  case ARRAY_TYPE_FLOAT   : *((float  *)y) = x; break;
-  case ARRAY_TYPE_DOUBLE  : *((double *)y) = x; break;
-  case ARRAY_TYPE_COMPLEX : *((Complex*)y) = x; break;
-  }
-
-  return y;
 }
 
 
