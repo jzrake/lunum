@@ -8,8 +8,8 @@
 
 #include "lualib.h"
 #include "lauxlib.h"
+#include "lunar.h"
 
-#include "numarray.h"
 
 
 
@@ -243,40 +243,15 @@ int luaC_array__pow(lua_State *L) { return _array_binary_op1(L, ARRAY_OP_POW); }
 
 int _array_binary_op1(lua_State *L, enum ArrayOperation op)
 {
-  if (!lua_isuserdata(L, 1)) {
-
+  if (!lunar_hasmetatable(L, 1, "array")) {
     struct Array *B = (struct Array*) luaL_checkudata(L, 2, "array");
-    void *val = _array_tovalue(L, B->type);
-
-    lua_getglobal(L, "lunar");
-    lua_getfield(L, -1, "zeros");
-    lua_pushnumber(L, B->size);
-    lua_pushnumber(L, B->type);
-    lua_call(L, 2, 1);
+    lunar_upcast(L, 1, B->type, B->size);
     lua_replace(L, 1);
-
-    struct Array *A = (struct Array*) luaL_checkudata(L, 1, "array");
-    array_assign_from_scalar(A, &val);
-    free(val);
-    lua_pop(L, 1);
   }
-
-  if (!lua_isuserdata(L, 2)) {
-
+  if (!lunar_hasmetatable(L, 2, "array")) {
     struct Array *A = (struct Array*) luaL_checkudata(L, 1, "array");
-    void *val = _array_tovalue(L, A->type);
-
-    lua_getglobal(L, "lunar");
-    lua_getfield(L, -1, "zeros");
-    lua_pushnumber(L, A->size);
-    lua_pushnumber(L, A->type);
-    lua_call(L, 2, 1);
+    lunar_upcast(L, 2, A->type, A->size);
     lua_replace(L, 2);
-
-    struct Array *B = (struct Array*) luaL_checkudata(L, 2, "array");
-    array_assign_from_scalar(B, val);
-    free(val);
-    lua_pop(L, 1);
   }
 
   return _array_binary_op2(L, op);
@@ -369,13 +344,7 @@ int luaC_lunar_zeros(lua_State *L)
   const size_t N = luaL_checkinteger(L, 1);
   const size_t T = luaL_optinteger(L, 2, ARRAY_TYPE_DOUBLE);
   struct Array A = array_new_zeros(N, T);
-
-  struct Array *B = (struct Array *) lua_newuserdata(L, sizeof(struct Array));
-  *B = A;
-
-  luaL_getmetatable(L, "array");
-  lua_setmetatable(L, -2);
-
+  lunar_pusharray1(L, &A);
   return 1;
 }
 

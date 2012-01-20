@@ -28,7 +28,9 @@ int upcast(lua_State *L)
 {
   enum ArrayType T = luaL_checkinteger(L, 2);
 
-  lunar_upcast(L, 1, T, 0);
+  if (lunar_upcast(L, 1, T, 0)) {
+    lua_replace(L, 1);
+  }
 
   lua_settop(L, 1);
   return 1;
