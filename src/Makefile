@@ -1,29 +1,31 @@
 
 
 
-OSNAME       := $(shell uname)
-INSTALL_HOME := $(shell pwd)/..
-
-LUA_HOME      = /usr/local
-CFLAGS        = -Wall -O2 -fPIC
-
 
 
 # Configuration for the host platform
 # ------------------------------------------------------------------------------
+OSNAME       := $(shell uname)
+LUA_HOME      = /usr/local
+CFLAGS        = -Wall -O2 -fPIC
+
 ifeq ($(OSNAME), Linux)
 SO = $(CC) -O -shared
+AR = ar rcu
 endif
 
 ifeq ($(OSNAME), Darwin)
 SO = $(CC) -O -bundle -undefined dynamic_lookup 
+AR = ar rcu
 endif
+# ------------------------------------------------------------------------------
 
 
-OBJ_C = numarray.o numlua.o
-NUMLUA_SO = $(INSTALL_HOME)/numlua.so
+NUMLUA_SO = numlua.so
+NUMLUA_A  = libnumlua.a
 
-default : $(NUMLUA_SO) numlua_api
+
+default : $(NUMLUA_A) $(NUMLUA_SO)
 
 %.o : %.c
 	$(CC) $(CFLAGS) -std=c99 -c $<
@@ -31,11 +33,14 @@ default : $(NUMLUA_SO) numlua_api
 numlua.o : numlua.c
 	$(CC) $(CFLAGS) -std=c99 -c $< -I$(LUA_HOME)/include
 
-numlua_api : numlua_api.c numlua.c numarray.c
-	$(CC) $(CFLAGS) -std=c99 $< -o $@ -L$(LUA_HOME)/lib -I$(LUA_HOME)/include -llua
+numlua_capi.o : numlua_capi.c
+	$(CC) $(CFLAGS) -std=c99 -c $< -I$(LUA_HOME)/include
 
-$(NUMLUA_SO) : $(OBJ_C)
+$(NUMLUA_A) : numarray.o numlua.o numlua_capi.o
+	$(AR) $@ $?
+
+$(NUMLUA_SO) : numarray.o numlua.o
 	$(SO) -o $(NUMLUA_SO) $^
 
 clean :
-	rm -f $(OBJ_C) $(NUMLUA_SO) numlua_api
+	rm -f *.o $(NUMLUA_A) $(NUMLUA_SO)

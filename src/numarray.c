@@ -20,6 +20,20 @@
 
 
 
+char *array_typename(enum ArrayType T)
+{
+  switch (T) {
+  case ARRAY_TYPE_CHAR    : return "char";
+  case ARRAY_TYPE_SHORT   : return "short";
+  case ARRAY_TYPE_INT     : return "int";
+  case ARRAY_TYPE_LONG    : return "long";
+  case ARRAY_TYPE_FLOAT   : return "float";
+  case ARRAY_TYPE_DOUBLE  : return "double";
+  case ARRAY_TYPE_COMPLEX : return "complex";
+  default: return "unknown array type";
+  }
+}
+
 struct Array array_new_zeros(size_t N, enum ArrayType T)
 {
   struct Array A;
@@ -56,7 +70,7 @@ void array_del(struct Array *A)
 }
 
 void array_binary_op(const struct Array *A, const struct Array *B,
-		     struct Array *C, enum ArrayOperation op)
+                     struct Array *C, enum ArrayOperation op)
 {
   const size_t N = A->size;
   const void *a = A->data;

@@ -32,6 +32,7 @@ struct Array
   enum ArrayType type;
 } ;
 
+char         *array_typename(enum ArrayType T);
 struct Array  array_new_zeros(size_t N, enum ArrayType T);
 struct Array  array_new_copy(const struct Array *B, enum ArrayType T);
 void          array_del(struct Array *A);
