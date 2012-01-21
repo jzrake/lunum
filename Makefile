@@ -35,9 +35,13 @@ HEADERS = \
 	$(INSTALL_HOME)/include/$(H1) \
 	$(INSTALL_HOME)/include/$(H2)
 
-TESTS = tests
 
-default : $(LUNAR_SO) $(LUNAR_A) $(TESTS)
+
+default : $(LUNAR_SO) $(LUNAR_A)
+
+tests : $(LUNAR_SO) $(LUNAR_A)
+
+all : default tests
 
 install : $(INSTALL_SO) $(INSTALL_A) $(HEADERS)
 
@@ -55,7 +59,7 @@ $(LUNAR_SO) : FORCE
 $(LUNAR_A) : FORCE
 	@make -C src $(LIB_A)
 
-$(TESTS) : FORCE
+tests : FORCE
 	@make -C tests
 
 $(INSTALL_SO) : $(LUNAR_SO)
