@@ -13,5 +13,7 @@ void          lunar_pusharray2(lua_State *L, void *data, enum ArrayType T, size_
 int           lunar_upcast(lua_State *L, int pos, enum ArrayType T, size_t N);
 int           lunar_hasmetatable(lua_State *L, int pos, const char *name);
 void         *lunar_tovalue(lua_State *L, enum ArrayType T);
+Complex       lunar_checkcomplex(lua_State *L, int n);
+void          lunar_pushcomplex(lua_State *L, Complex z);
 
 #endif // __NumluaCapi_HEADER__

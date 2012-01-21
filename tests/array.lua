@@ -53,6 +53,16 @@ local function test6()
    print(A)
 end
 
+local function test7()
+   local I = lunar.I
+   local A = lunar.array({1,2,3})
+   print(lunar.sin(A))
+   print(lunar.sin(A + I))
+   print(lunar.cos(A + I))
+   print(lunar.log(A + I))
+   print(lunar.atanh(A + I))
+end
+
 
 test1()
 test2()
@@ -61,4 +71,4 @@ test3()
 test4()
 test5()
 test6()
-
+test7()

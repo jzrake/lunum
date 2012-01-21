@@ -9,8 +9,20 @@
 
 
 
-void _stack_dump(lua_State *L);
 
+void lunar_pushcomplex(lua_State *L, Complex z)
+{
+  Complex *w = (Complex*) lua_newuserdata(L, sizeof(Complex));
+  luaL_getmetatable(L, "complex");
+  lua_setmetatable(L, -2);
+  *w = z;
+}
+
+Complex lunar_checkcomplex(lua_State *L, int n)
+{
+  Complex *w = (Complex*) luaL_checkudata(L, n, "complex"); 
+  return *w;
+}
 
 struct Array *lunar_checkarray1(lua_State *L, int pos)
 {
