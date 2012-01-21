@@ -31,12 +31,20 @@ LICENSE
 
 INTRODUCTION
 
-Lunar ('lua' + 'array') is a numeric extension for the Lua programming language. Its purpose is to provide numeric arrays to Lua which behave in the same way, and with the same efficiency as numpy arrays. It may be loaded as a Lua module through a shared object file, or linked statically to embed in an application.
+Lunar ('lua' + 'array') is a numeric extension for the Lua programming
+language. Its purpose is to provide numeric arrays to Lua which behave in the
+same way, and with the same efficiency as numpy arrays. It may be loaded as a
+Lua module through a shared object file, or linked statically to embed in an
+application.
 
 
 DATA TYPES
 
-Lunar provides 7 atomic data types: char, short, int, long, float, double, and complex. The internal C representation of these types is faithful to their names, but Lua numbers are used on the Lua side for all but complex. Complex values are provided by using the lunar.I imaginary unit, e.g. z = 1 + 2*lunar.I is the complex number (1,2). All complex values use double precision.
+Lunar provides 7 atomic data types: char, short, int, long, float, double, and
+complex. The internal C representation of these types is faithful to their
+names, but Lua numbers are used on the Lua side for all but complex. Complex
+values are provided by using the lunar.I imaginary unit, e.g. z = 1 + 2*lunar.I
+is the complex number (1,2). All complex values use double precision.
 
 
 INSTALLATION
