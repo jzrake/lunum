@@ -69,7 +69,7 @@ TO specify the location of Lua header and library files, put
 LUA_HOME=/path/to/lua at the end of the make command. 'make
 install' creates lib and include directories locally. To
 specify a different location, use
-INSTALL_HOME=/path/to/lunar. To load lunar as a Lua
+INSTALL_TOP=/path/to/lunar. To load lunar as a Lua
 extension, set the environment variable as follows:
 
 export LUA_CPATH=/path/to/lunar/lib/?.so
