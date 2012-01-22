@@ -31,25 +31,44 @@ LICENSE
 
 INTRODUCTION
 
-Lunar ('lua' + 'array') is a numeric extension for the Lua
-programming language. Its purpose is to provide numeric arrays to Lua
-which behave in the same way, and with the same efficiency as numpy
-arrays. It may be loaded as a Lua module through a shared object
-file, or linked statically to embed in an application.
+Lunar ('lua' + 'array') is a numeric extension for the Lua programming
+language. Its purpose is to provide numeric arrays to Lua which behave
+just like numpy arrays, and are just as fast (if not faster). It may
+be loaded as a Lua module through a shared object file, or linked
+statically to embed in an application.
 
 
-DATA TYPES
 
-Lunar provides 7 atomic data types: char, short, int, long, float,
-double, and complex. The internal C representation of these types is
-faithful to their names, but Lua numbers are used on the Lua side for
-all but complex. Complex values are provided by using the lunar.I
-imaginary unit, e.g. z = 1 + 2*lunar.I is the complex number
-(1,2). All complex values use double precision.
+FEATURES
+
+The feature set is minimal. At this time, all arrays are 1-dimensional
+and no slicing operations are supported. However, vectorized
+arithmetic operations are fully supported, and are carried out
+entirely in C. Lunar provides 7 atomic data types: char, short, int,
+long, float, double, and complex. Complex values are all double
+precision, and are provided by using the imaginary unit, e.g. z = 1 +
+2*lunar.I is the complex number (1,2).
+
+Unlike Lua tables with numeric keys, lunar arrays start from index
+0. This is to be consistent with C, python, and numpy. The Luar C API
+provides functions for pushing new Lunar arrays onto the stack, and
+obtaining them from the stack.
+
 
 
 INSTALLATION
 
-make LUA_HOME=/path/to/lua/install
-make install INSTALL_HOME=/path/to/lunar
+make
 make tests
+make install
+
+TO specify the location of Lua header and library files, put
+LUA_HOME=/path/to/lua at the end of the make command. 'make install'
+creates lib and include directories locally. To specify a different
+location, use INSTALL_HOME=/path/to/lunar. To load lunar as a Lua
+extension, set the environment variable as follows:
+
+export LUA_CPATH=/path/to/lunar/lib/?.so
+
+
+
