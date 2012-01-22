@@ -54,7 +54,7 @@ e.g. z = 1 + 2*lunar.I is the complex number (1,2).
 Unlike Lua tables with numeric keys, lunar arrays start from
 index 0. This is to be consistent with C, python, and
 numpy. The Luar C API provides functions for pushing new
-Lunar arrays onto the stack, and obtaining them from the
+lunar arrays onto the stack, and obtaining them from the
 stack.
 
 
