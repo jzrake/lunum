@@ -32,10 +32,11 @@
   }
 
 
-
+static int luaC_lunar_table(lua_State *L);
 static int luaC_lunar_array(lua_State *L);
 static int luaC_lunar_zeros(lua_State *L);
 static int luaC_lunar_dtype(lua_State *L);
+
 
 static int luaC_lunar_sin(lua_State *L);
 static int luaC_lunar_cos(lua_State *L);
@@ -130,6 +131,7 @@ int luaopen_lunar(lua_State *L)
   // Create the 'lunar' table
   // ---------------------------------------------------------------------------
   lua_newtable(L);
+  LUA_NEW_MODULEMETHOD(L, lunar, table);
   LUA_NEW_MODULEMETHOD(L, lunar, array);
   LUA_NEW_MODULEMETHOD(L, lunar, zeros);
   LUA_NEW_MODULEMETHOD(L, lunar, dtype);
@@ -398,6 +400,12 @@ int _complex_binary_op2(lua_State *L, enum ArrayOperation op)
 
 
 
+
+int luaC_lunar_table(lua_State *L)
+{
+  lunar_totable(L, 1);
+  return 1;
+}
 
 int luaC_lunar_array(lua_State *L)
 {

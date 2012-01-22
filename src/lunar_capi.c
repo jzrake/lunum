@@ -20,7 +20,7 @@ void lunar_pushcomplex(lua_State *L, Complex z)
 
 Complex lunar_checkcomplex(lua_State *L, int n)
 {
-  Complex *w = (Complex*) luaL_checkudata(L, n, "complex"); 
+  Complex *w = (Complex*) luaL_checkudata(L, n, "complex");
   return *w;
 }
 
@@ -46,7 +46,7 @@ void *lunar_checkarray2(lua_State *L, int pos, enum ArrayType T, size_t *N)
   struct Array *A = (struct Array*) luaL_checkudata(L, top, "array");
   if (A->type != T) {
     luaL_error(L, "expected array of type %s, got %s\n",
-	       array_typename(T), array_typename(A->type));
+               array_typename(T), array_typename(A->type));
   }
   lua_replace(L, pos);
 
@@ -74,6 +74,29 @@ void lunar_pusharray2(lua_State *L, void *data, enum ArrayType T, size_t N)
 }
 
 
+void lunar_totable(lua_State *L, int pos)
+{
+  struct Array *A = (struct Array*) luaL_checkudata(L, pos, "array");
+  const void *a = A->data;
+
+  lua_newtable(L);
+  for (size_t i=0; i<A->size; ++i) {
+
+    lua_pushnumber(L, i+1);
+
+    switch (A->type) {
+    case ARRAY_TYPE_CHAR    : lua_pushnumber(L, ((char    *)a)[i]); break;
+    case ARRAY_TYPE_SHORT   : lua_pushnumber(L, ((short   *)a)[i]); break;
+    case ARRAY_TYPE_INT     : lua_pushnumber(L, ((int     *)a)[i]); break;
+    case ARRAY_TYPE_LONG    : lua_pushnumber(L, ((long    *)a)[i]); break;
+    case ARRAY_TYPE_FLOAT   : lua_pushnumber(L, ((float   *)a)[i]); break;
+    case ARRAY_TYPE_DOUBLE  : lua_pushnumber(L, ((double  *)a)[i]); break;
+    case ARRAY_TYPE_COMPLEX : lunar_pushcomplex(L, ((Complex *)a)[i]); break;
+    }
+
+    lua_settable(L, -3);
+  }
+}
 
 int lunar_upcast(lua_State *L, int pos, enum ArrayType T, size_t N)
 // -----------------------------------------------------------------------------
@@ -151,7 +174,7 @@ int lunar_upcast(lua_State *L, int pos, enum ArrayType T, size_t N)
   // ---------------------------------------------------------------------------
   else {
     luaL_error(L, "cannot cast to array from object of type %s\n",
-	       lua_typename(L, lua_type(L, pos)));
+               lua_typename(L, lua_type(L, pos)));
     return 0;
   }
 }
