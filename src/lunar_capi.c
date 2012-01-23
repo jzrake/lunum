@@ -138,7 +138,7 @@ int lunar_upcast(lua_State *L, int pos, enum ArrayType T, size_t N)
       lua_gettable(L, pos);
 
       void *val = lunar_tovalue(L, T);
-      memcpy(A.data + array_sizeof(T)*i, val, array_sizeof(T));
+      memcpy((char*)A.data + array_sizeof(T)*i, val, array_sizeof(T));
       free(val);
 
       lua_pop(L, 1);
