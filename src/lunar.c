@@ -268,7 +268,7 @@ int luaC_array__newindex(lua_State *L)
   }
 
   void *val = lunar_tovalue(L, T);
-  memcpy(A->data + array_sizeof(T)*n, val, array_sizeof(T));
+  memcpy((char*)A->data + array_sizeof(T)*n, val, array_sizeof(T));
   free(val);
 
   return 0;
@@ -409,7 +409,7 @@ int luaC_lunar_table(lua_State *L)
 
 int luaC_lunar_array(lua_State *L)
 {
-  const size_t T = luaL_optinteger(L, 2, ARRAY_TYPE_DOUBLE);
+  const enum ArrayType T = (enum ArrayType) luaL_optinteger(L, 2, ARRAY_TYPE_DOUBLE);
   lunar_upcast(L, 1, T, 1);
   return 1;
 }
@@ -417,7 +417,7 @@ int luaC_lunar_array(lua_State *L)
 int luaC_lunar_zeros(lua_State *L)
 {
   const size_t N = luaL_checkinteger(L, 1);
-  const size_t T = luaL_optinteger(L, 2, ARRAY_TYPE_DOUBLE);
+  const enum ArrayType T = (enum ArrayType) luaL_optinteger(L, 2, ARRAY_TYPE_DOUBLE);
   struct Array A = array_new_zeros(N, T);
   lunar_pusharray1(L, &A);
   return 1;
