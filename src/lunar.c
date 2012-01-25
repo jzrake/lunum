@@ -23,10 +23,10 @@
     lua_settable((luastate), -3);                               \
   }
 
-#define LUA_NEW_MODULEDATA(luastate, obj, dataname) {		\
-    lua_pushstring((luastate), (#dataname));			\
-    lua_pushnumber((luastate), (obj));				\
-    lua_settable((luastate), -3);                               \
+#define LUA_NEW_MODULEDATA(luastate, obj, dataname) {   \
+    lua_pushstring((luastate), (#dataname));            \
+    lua_pushnumber((luastate), (obj));                  \
+    lua_settable((luastate), -3);                       \
   }
 
 
@@ -34,6 +34,8 @@ static int luaC_lunar_table(lua_State *L);
 static int luaC_lunar_array(lua_State *L);
 static int luaC_lunar_zeros(lua_State *L);
 static int luaC_lunar_dtype(lua_State *L);
+static int luaC_lunar_shape(lua_State *L);
+static int luaC_lunar_resize(lua_State *L);
 
 
 static int luaC_lunar_sin(lua_State *L);
@@ -63,6 +65,7 @@ static int luaC_lunar_log10(lua_State *L);
 
 static int luaC_array__tostring(lua_State *L);
 static int luaC_array__len(lua_State *L);
+static int luaC_array__call(lua_State *L);
 static int luaC_array__index(lua_State *L);
 static int luaC_array__newindex(lua_State *L);
 static int luaC_array__add(lua_State *L);
@@ -103,6 +106,7 @@ int luaopen_lunar(lua_State *L)
   luaL_newmetatable(L, "array");
   LUA_NEW_METAMETHOD(L, array, tostring);
   LUA_NEW_METAMETHOD(L, array, len);
+  LUA_NEW_METAMETHOD(L, array, call);
   LUA_NEW_METAMETHOD(L, array, index);
   LUA_NEW_METAMETHOD(L, array, newindex);
   LUA_NEW_METAMETHOD(L, array, add);
@@ -133,6 +137,8 @@ int luaopen_lunar(lua_State *L)
   LUA_NEW_MODULEMETHOD(L, lunar, array);
   LUA_NEW_MODULEMETHOD(L, lunar, zeros);
   LUA_NEW_MODULEMETHOD(L, lunar, dtype);
+  LUA_NEW_MODULEMETHOD(L, lunar, shape);
+  LUA_NEW_MODULEMETHOD(L, lunar, resize);
 
   LUA_NEW_MODULEMETHOD(L, lunar, sin);
   LUA_NEW_MODULEMETHOD(L, lunar, cos);
@@ -198,7 +204,7 @@ int luaC_array__tostring(lua_State *L)
 
     char s[64];
 
-    switch (A->type) {
+    switch (A->dtype) {
     case ARRAY_TYPE_CHAR    : sprintf(s, "%d" , ((char   *)A->data)[n]); break;
     case ARRAY_TYPE_SHORT   : sprintf(s, "%d" , ((short  *)A->data)[n]); break;
     case ARRAY_TYPE_INT     : sprintf(s, "%d" , ((int    *)A->data)[n]); break;
@@ -206,9 +212,9 @@ int luaC_array__tostring(lua_State *L)
     case ARRAY_TYPE_FLOAT   : sprintf(s, "%g" , ((float  *)A->data)[n]); break;
     case ARRAY_TYPE_DOUBLE  : sprintf(s, "%g" , ((double *)A->data)[n]); break;
     case ARRAY_TYPE_COMPLEX : sprintf(s, "%g%s%gj",
-				      creal(((Complex*)A->data)[n]),
-				      cimag(((Complex*)A->data)[n]) > 0.0 ? "+" : "-",
-				      fabs(cimag(((Complex*)A->data)[n]))); break;
+                                      creal(((Complex*)A->data)[n]),
+                                      cimag(((Complex*)A->data)[n]) > 0.0 ? "+" : "-",
+                                      fabs(cimag(((Complex*)A->data)[n]))); break;
     }
 
     if (n == A->size-1) {
@@ -234,6 +240,39 @@ int luaC_array__len(lua_State *L)
   return 1;
 }
 
+int luaC_array__call(lua_State *L)
+{
+  struct Array *A = (struct Array*) luaL_checkudata(L, 1, "array");
+  int nind = lua_gettop(L) - 1;
+
+  if (nind != A->ndims) {
+    luaL_error(L, "wrong number of indices (%d) for array of dimension %d",
+               nind, A->ndims);
+    return 0;
+  }
+  const int Nd = A->ndims;
+  int *stride = (int*) malloc(A->ndims * sizeof(int));
+  stride[Nd-1] = 1;
+
+  for (int d=Nd-2; d>=0; --d) {
+    stride[d] = stride[d+1] * A->shape[d+1];
+  }
+  int m = 0;
+
+  for (int d=0; d<A->ndims; ++d) {
+    int i = lua_tointeger(L, d+2);
+    m += i*stride[d];
+  }
+
+  luaL_getmetafield(L, 1, "__index");
+  lua_pushvalue(L, 1);
+  lua_pushnumber(L, m);
+
+  lua_call(L, 2, 1);
+  free(stride);
+
+  return 1;
+}
 int luaC_array__index(lua_State *L)
 {
   struct Array *A = (struct Array*) luaL_checkudata(L, 1, "array");
@@ -243,7 +282,7 @@ int luaC_array__index(lua_State *L)
     luaL_error(L, "index %d out of bounds on array of length %d", n, A->size);
   }
 
-  switch (A->type) {
+  switch (A->dtype) {
   case ARRAY_TYPE_CHAR    : lua_pushnumber(L,    ((char   *)A->data)[n]); break;
   case ARRAY_TYPE_SHORT   : lua_pushnumber(L,    ((short  *)A->data)[n]); break;
   case ARRAY_TYPE_INT     : lua_pushnumber(L,    ((int    *)A->data)[n]); break;
@@ -259,7 +298,7 @@ int luaC_array__newindex(lua_State *L)
 {
   struct Array *A = (struct Array*) luaL_checkudata(L, 1, "array");
   const int n = luaL_checkinteger(L, 2);
-  const enum ArrayType T = A->type;
+  const enum ArrayType T = A->dtype;
 
   if (n >= A->size) {
     luaL_error(L, "index %d out of bounds on array of length %d", n, A->size);
@@ -283,12 +322,12 @@ int _array_binary_op1(lua_State *L, enum ArrayOperation op)
 {
   if (!lunar_hasmetatable(L, 1, "array")) {
     struct Array *B = (struct Array*) luaL_checkudata(L, 2, "array");
-    lunar_upcast(L, 1, B->type, B->size);
+    lunar_upcast(L, 1, B->dtype, B->size);
     lua_replace(L, 1);
   }
   if (!lunar_hasmetatable(L, 2, "array")) {
     struct Array *A = (struct Array*) luaL_checkudata(L, 1, "array");
-    lunar_upcast(L, 2, A->type, A->size);
+    lunar_upcast(L, 2, A->dtype, A->size);
     lua_replace(L, 2);
   }
 
@@ -302,13 +341,13 @@ int _array_binary_op2(lua_State *L, enum ArrayOperation op)
 
   if (A->size != B->size) {
     luaL_error(L, "arrays could not be broadcast together with shapes (%d) (%d)",
-	       A->size, B->size);
+               A->size, B->size);
   }
   const int N = A->size;
-  enum ArrayType T = (A->type >= B->type) ? A->type : B->type;
+  enum ArrayType T = (A->dtype >= B->dtype) ? A->dtype : B->dtype;
 
-  struct Array A_ = (A->type == T) ? *A : array_new_copy(A, T);
-  struct Array B_ = (B->type == T) ? *B : array_new_copy(B, T);
+  struct Array A_ = (A->dtype == T) ? *A : array_new_copy(A, T);
+  struct Array B_ = (B->dtype == T) ? *B : array_new_copy(B, T);
 
   struct Array *C = (struct Array*) lua_newuserdata(L, sizeof(struct Array));
   *C = array_new_zeros(N, T);
@@ -318,13 +357,11 @@ int _array_binary_op2(lua_State *L, enum ArrayOperation op)
   luaL_getmetatable(L, "array");
   lua_setmetatable(L, -2);
 
-  if (A->type != T) array_del(&A_);
-  if (B->type != T) array_del(&B_);
+  if (A->dtype != T) array_del(&A_);
+  if (B->dtype != T) array_del(&B_);
 
   return 1;
 }
-
-
 
 
 
@@ -424,8 +461,37 @@ int luaC_lunar_zeros(lua_State *L)
 int luaC_lunar_dtype(lua_State *L)
 {
   struct Array *A = (struct Array*) luaL_checkudata(L, 1, "array");
-  lua_pushstring(L, array_typename(A->type));
+  lua_pushstring(L, array_typename(A->dtype));
   return 1;
+}
+
+int luaC_lunar_shape(lua_State *L)
+{
+  struct Array *A = (struct Array*) luaL_checkudata(L, 1, "array");
+  lunar_pusharray2(L, A->shape, ARRAY_TYPE_INT, A->ndims);
+  return 1;
+}
+
+int luaC_lunar_resize(lua_State *L)
+{
+  int Nd;
+  struct Array *A = (struct Array*) luaL_checkudata(L, 1, "array"); // the array to resize
+  int *N = (int*) lunar_checkarray2(L, 2, ARRAY_TYPE_INT, &Nd);
+
+  int ntot = 1;
+  for (int d=0; d<Nd; ++d) ntot *= N[d];
+
+  if (A->size != ntot) {
+    luaL_error(L, "new and old total sizes do not agree");
+    return 0;
+  }
+  if (A->shape) free(A->shape);
+
+  A->ndims = Nd;
+  A->shape = (int*) malloc(Nd*sizeof(int));
+  memcpy(A->shape, N, Nd*sizeof(int));
+
+  return 0;
 }
 
 
@@ -460,7 +526,7 @@ void _unary_func(lua_State *L, double(*f)(double), Complex(*g)(Complex))
   else if (lunar_hasmetatable(L, 1, "complex")) {
 
     if (g == NULL) {
-      luaL_error(L, "complex operation not supported\n");
+      luaL_error(L, "complex operation not supported");
     }
 
     const Complex z = lunar_checkcomplex(L, 1);
@@ -469,16 +535,16 @@ void _unary_func(lua_State *L, double(*f)(double), Complex(*g)(Complex))
   else if (lunar_hasmetatable(L, 1, "array")) {
     struct Array *A = (struct Array*) lua_touserdata(L, 1);
 
-    if (A->type <= ARRAY_TYPE_DOUBLE) {
+    if (A->dtype <= ARRAY_TYPE_DOUBLE) {
       struct Array B = array_new_copy(A, ARRAY_TYPE_DOUBLE);
       double *b = (double*) B.data;
       for (int i=0; i<B.size; ++i) b[i] = f(b[i]);
       lunar_pusharray1(L, &B);
     }
-    else if (A->type == ARRAY_TYPE_COMPLEX) {
+    else if (A->dtype == ARRAY_TYPE_COMPLEX) {
 
       if (g == NULL) {
-	luaL_error(L, "complex operation not supported\n");
+        luaL_error(L, "complex operation not supported");
       }
 
       struct Array B = array_new_copy(A, ARRAY_TYPE_COMPLEX);

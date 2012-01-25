@@ -39,10 +39,13 @@ char *array_typename(enum ArrayType T)
 struct Array array_new_zeros(int N, enum ArrayType T)
 {
   struct Array A;
-  A.data = malloc(N*array_sizeof(T));
-  A.size = N;
-  A.type = T;
+  A.data  = malloc(N*array_sizeof(T));
+  A.size  = N;
+  A.dtype = T;
+  A.shape = (int*) malloc(sizeof(int));
+  A.ndims = 1;
 
+  A.shape[0] = N;
   void *a = A.data;
 
   switch (T) {
@@ -67,8 +70,12 @@ struct Array array_new_copy(const struct Array *B, enum ArrayType T)
 
 void array_del(struct Array *A)
 {
+  if (A->data) free(A->data);
+  if (A->shape) free(A->shape);
+
   A->size = 0;
-  free(A->data);
+  A->data = NULL;
+  A->shape = NULL;
 }
 
 void array_binary_op(const struct Array *A, const struct Array *B,
@@ -81,7 +88,7 @@ void array_binary_op(const struct Array *A, const struct Array *B,
 
   switch (op) {
   case ARRAY_OP_ADD:
-    switch (A->type) {
+    switch (A->dtype) {
     case ARRAY_TYPE_CHAR    : EXPR_ADD(char   ) ; break;
     case ARRAY_TYPE_SHORT   : EXPR_ADD(short  ) ; break;
     case ARRAY_TYPE_INT     : EXPR_ADD(int    ) ; break;
@@ -92,7 +99,7 @@ void array_binary_op(const struct Array *A, const struct Array *B,
     }
     break;
   case ARRAY_OP_SUB:
-    switch (A->type) {
+    switch (A->dtype) {
     case ARRAY_TYPE_CHAR    : EXPR_SUB(char   ) ; break;
     case ARRAY_TYPE_SHORT   : EXPR_SUB(short  ) ; break;
     case ARRAY_TYPE_INT     : EXPR_SUB(int    ) ; break;
@@ -103,7 +110,7 @@ void array_binary_op(const struct Array *A, const struct Array *B,
     }
     break;
   case ARRAY_OP_MUL:
-    switch (A->type) {
+    switch (A->dtype) {
     case ARRAY_TYPE_CHAR    : EXPR_MUL(char   ) ; break;
     case ARRAY_TYPE_SHORT   : EXPR_MUL(short  ) ; break;
     case ARRAY_TYPE_INT     : EXPR_MUL(int    ) ; break;
@@ -114,7 +121,7 @@ void array_binary_op(const struct Array *A, const struct Array *B,
     }
     break;
   case ARRAY_OP_DIV:
-    switch (A->type) {
+    switch (A->dtype) {
     case ARRAY_TYPE_CHAR    : EXPR_DIV(char   ) ; break;
     case ARRAY_TYPE_SHORT   : EXPR_DIV(short  ) ; break;
     case ARRAY_TYPE_INT     : EXPR_DIV(int    ) ; break;
@@ -125,7 +132,7 @@ void array_binary_op(const struct Array *A, const struct Array *B,
     }
     break;
   case ARRAY_OP_POW:
-    switch (A->type) {
+    switch (A->dtype) {
     case ARRAY_TYPE_CHAR    : EXPR_POW(char   ) ; break;
     case ARRAY_TYPE_SHORT   : EXPR_POW(short  ) ; break;
     case ARRAY_TYPE_INT     : EXPR_POW(int    ) ; break;
@@ -157,7 +164,7 @@ void array_assign_from_scalar(struct Array *A, const void *val)
   const int N = A->size;
   void     *a = A->data;
 
-  switch (A->type) {
+  switch (A->dtype) {
   case ARRAY_TYPE_CHAR    : EXPR_ASSIGN1(char   , val) ; break;
   case ARRAY_TYPE_SHORT   : EXPR_ASSIGN1(short  , val) ; break;
   case ARRAY_TYPE_INT     : EXPR_ASSIGN1(int    , val) ; break;
@@ -174,9 +181,9 @@ void array_assign_from_array(struct Array *A, const struct Array *B)
   const void  *b = B->data;
   const int    N = B->size;
 
-  switch (A->type) {
+  switch (A->dtype) {
   case ARRAY_TYPE_CHAR:
-    switch (B->type) {
+    switch (B->dtype) {
       //                               (A->type, B->type)
     case ARRAY_TYPE_CHAR    : EXPR_ASSIGN2(char, char)    ; break;
     case ARRAY_TYPE_SHORT   : EXPR_ASSIGN2(char, short)   ; break;
@@ -189,7 +196,7 @@ void array_assign_from_array(struct Array *A, const struct Array *B)
     break;
 
   case ARRAY_TYPE_SHORT:
-    switch (B->type) {
+    switch (B->dtype) {
     case ARRAY_TYPE_CHAR    : EXPR_ASSIGN2(short, char)    ; break;
     case ARRAY_TYPE_SHORT   : EXPR_ASSIGN2(short, short)   ; break;
     case ARRAY_TYPE_INT     : EXPR_ASSIGN2(short, int)     ; break;
@@ -201,7 +208,7 @@ void array_assign_from_array(struct Array *A, const struct Array *B)
     break;
 
   case ARRAY_TYPE_INT:
-    switch (B->type) {
+    switch (B->dtype) {
     case ARRAY_TYPE_CHAR    : EXPR_ASSIGN2(int, char)    ; break;
     case ARRAY_TYPE_SHORT   : EXPR_ASSIGN2(int, short)   ; break;
     case ARRAY_TYPE_INT     : EXPR_ASSIGN2(int, int)     ; break;
@@ -213,7 +220,7 @@ void array_assign_from_array(struct Array *A, const struct Array *B)
     break;
 
   case ARRAY_TYPE_LONG:
-    switch (B->type) {
+    switch (B->dtype) {
     case ARRAY_TYPE_CHAR    : EXPR_ASSIGN2(long, char)    ; break;
     case ARRAY_TYPE_SHORT   : EXPR_ASSIGN2(long, short)   ; break;
     case ARRAY_TYPE_INT     : EXPR_ASSIGN2(long, int)     ; break;
@@ -225,7 +232,7 @@ void array_assign_from_array(struct Array *A, const struct Array *B)
     break;
 
   case ARRAY_TYPE_FLOAT:
-    switch (B->type) {
+    switch (B->dtype) {
     case ARRAY_TYPE_CHAR    : EXPR_ASSIGN2(float, char)    ; break;
     case ARRAY_TYPE_SHORT   : EXPR_ASSIGN2(float, short)   ; break;
     case ARRAY_TYPE_INT     : EXPR_ASSIGN2(float, int)     ; break;
@@ -237,7 +244,7 @@ void array_assign_from_array(struct Array *A, const struct Array *B)
     break;
 
   case ARRAY_TYPE_DOUBLE:
-    switch (B->type) {
+    switch (B->dtype) {
     case ARRAY_TYPE_CHAR    : EXPR_ASSIGN2(double, char)    ; break;
     case ARRAY_TYPE_SHORT   : EXPR_ASSIGN2(double, short)   ; break;
     case ARRAY_TYPE_INT     : EXPR_ASSIGN2(double, int)     ; break;
@@ -249,7 +256,7 @@ void array_assign_from_array(struct Array *A, const struct Array *B)
     break;
 
   case ARRAY_TYPE_COMPLEX:
-    switch (B->type) {
+    switch (B->dtype) {
     case ARRAY_TYPE_CHAR    : EXPR_ASSIGN2(Complex, char)    ; break;
     case ARRAY_TYPE_SHORT   : EXPR_ASSIGN2(Complex, short)   ; break;
     case ARRAY_TYPE_INT     : EXPR_ASSIGN2(Complex, int)     ; break;

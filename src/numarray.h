@@ -24,8 +24,9 @@ enum ArrayOperation {
 struct Array
 {
   void *data;
-  int size;
-  enum ArrayType type;
+  enum ArrayType dtype;
+  int size, ndims;
+  int *shape;
 } ;
 
 

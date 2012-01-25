@@ -44,9 +44,9 @@ void *lunar_checkarray2(lua_State *L, int pos, enum ArrayType T, int *N)
   }
 
   struct Array *A = (struct Array*) luaL_checkudata(L, top, "array");
-  if (A->type != T) {
-    luaL_error(L, "expected array of type %s, got %s\n",
-               array_typename(T), array_typename(A->type));
+  if (A->dtype != T) {
+    luaL_error(L, "expected array of dtype %s, got %s\n",
+               array_typename(T), array_typename(A->dtype));
   }
   lua_replace(L, pos);
 
@@ -84,7 +84,7 @@ void lunar_totable(lua_State *L, int pos)
 
     lua_pushnumber(L, i+1);
 
-    switch (A->type) {
+    switch (A->dtype) {
     case ARRAY_TYPE_CHAR    : lua_pushnumber(L, ((char    *)a)[i]); break;
     case ARRAY_TYPE_SHORT   : lua_pushnumber(L, ((short   *)a)[i]); break;
     case ARRAY_TYPE_INT     : lua_pushnumber(L, ((int     *)a)[i]); break;
@@ -100,11 +100,11 @@ void lunar_totable(lua_State *L, int pos)
 
 int lunar_upcast(lua_State *L, int pos, enum ArrayType T, int N)
 // -----------------------------------------------------------------------------
-// If the object at position 'pos' is already an array of type 'T', then push
-// nothing and return 0. If the type is not 'T', then return 1 and push a copy
-// of that array with type 'T' onto the stack. If it is a table, then push an
-// array of type 'T' having the length of the table. If it is a number or
-// complex, then push an array of type float or complex respectively having
+// If the object at position 'pos' is already an array of dtype 'T', then push
+// nothing and return 0. If the dtype is not 'T', then return 1 and push a copy
+// of that array with dtype 'T' onto the stack. If it is a table, then push an
+// array of dtype 'T' having the length of the table. If it is a number or
+// complex, then push an array of dtype float or complex respectively having
 // length 'N'.
 // -----------------------------------------------------------------------------
 {
@@ -114,7 +114,7 @@ int lunar_upcast(lua_State *L, int pos, enum ArrayType T, int N)
 
     struct Array *A = (struct Array*) lua_touserdata(L, pos);
 
-    if (A->type == T) {
+    if (A->dtype == T) {
       return 0;
     }
 
@@ -173,7 +173,7 @@ int lunar_upcast(lua_State *L, int pos, enum ArrayType T, int N)
   // Throw an error
   // ---------------------------------------------------------------------------
   else {
-    luaL_error(L, "cannot cast to array from object of type %s\n",
+    luaL_error(L, "cannot cast to array from object of dtype %s\n",
                lua_typename(L, lua_type(L, pos)));
     return 0;
   }
@@ -189,48 +189,6 @@ int lunar_hasmetatable(lua_State *L, int pos, const char *name)
   lua_settop(L, top);
   return eq;
 }
-
-
-
-
-
-
-void _stack_dump(lua_State *L)
-{
-  const int top = lua_gettop(L);
-  printf("lua stack size: %d ... (", top);
-  for (int i=1; i<=top; ++i) {
-
-    int t = lua_type(L, i);
-
-    switch (t) {
-
-    case LUA_TSTRING:
-      printf("`%s'", lua_tostring(L, i));
-      break;
-
-    case LUA_TBOOLEAN:
-      printf(lua_toboolean(L, i) ? "true" : "false");
-      break;
-
-    case LUA_TNUMBER:
-      printf("%g", lua_tonumber(L, i));
-      break;
-
-    default:
-      printf("%s", lua_typename(L, t));
-      break;
-
-    }
-    printf(", ");
-  }
-  printf(")\n");
-}
-
-
-
-
-
 
 
 void *lunar_tovalue(lua_State *L, enum ArrayType T)
