@@ -42,14 +42,31 @@ embed in an application.
 
 FEATURES
 
-The feature set is minimal. At this time, all arrays are
-1-dimensional and no slicing operations are
-supported. However, vectorized arithmetic operations are
-fully supported, and are carried out entirely in C. Lunar
-provides 7 atomic data types: char, short, int, long, float,
-double, and complex. Complex values are all double
-precision, and are provided by using the imaginary unit,
-e.g. z = 1 + 2*lunar.I is the complex number (1,2).
+* Arrays of arbitrary dimension are supported, however there
+  is no support for slicing operations at this time.
+
+* Vectorized arithmetic operations are fully supported, and
+  are carried out entirely in C. These include addition,
+  subtraction, multiplication, division, and exponentiation
+  (through '^'). Mixed operations on scalar and array
+  quantities work as expected. C casting rules are applied
+  to binary operations between mixed array types.
+
+* The C math library is exposed and overloaded through
+  lunar. For example, lunar.asinh operates correctly on all
+  lunar data types. Integral arrays are upcast to double
+  precision, and complex arrays use the C complex math
+  functions.
+
+* Lunar provides 7 atomic data types: char, short, int,
+  long, float, double, and complex. Complex values are all
+  double precision, and are built by adding the imaginary
+  unit to a number, e.g. z = 1 + 2*lunar.I is the complex
+  number (1,2).
+
+
+
+CONVENTIONS
 
 Unlike Lua tables with numeric keys, lunar arrays start from
 index 0. This is to be consistent with C, python, and
