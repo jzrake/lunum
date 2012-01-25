@@ -17,13 +17,34 @@
 # ------------------------------------------------------------------------------
 
 
-INSTALL_TOP := $(shell pwd)
+# Configuration for the host platform
+# ------------------------------------------------------------------------------
+export OSNAME       = $(shell uname)
+export LUA_HOME     = /usr/local
+export CFLAGS       = -Wall -O2 -fPIC
+
+ifeq ($(OSNAME), Linux)
+export SO    = $(CC) -O -shared
+export AR    = ar rcu
+export CLIBS = -lm -ldl
+endif
+
+ifeq ($(OSNAME), Darwin)
+export SO    = $(CC) -O -bundle -undefined dynamic_lookup 
+export AR    = ar rcu
+export CLIBS = 
+endif
+# ------------------------------------------------------------------------------
+
+
+INSTALL_TOP = $(shell pwd)
+BUILD_TOP   = $(shell pwd)
 
 LIB_SO      = lunar.so
 LIB_A       = liblunar.a
 
-LUNAR_SO    = src/$(LIB_SO)
-LUNAR_A     = src/$(LIB_A)
+export LUNAR_SO = $(BUILD_TOP)/src/$(LIB_SO)
+export LUNAR_A  = $(BUILD_TOP)/src/$(LIB_A)
 
 INSTALL_SO  = $(INSTALL_TOP)/lib/$(LIB_SO)
 INSTALL_A   = $(INSTALL_TOP)/lib/$(LIB_A)
@@ -54,10 +75,10 @@ $(INSTALL_TOP)/include/$(H2) :
 	cp src/$(H2) $(INSTALL_TOP)/include
 
 $(LUNAR_SO) : FORCE
-	@make -C src $(LIB_SO)
+	@make -C src $(LUNAR_SO)
 
 $(LUNAR_A) : FORCE
-	@make -C src $(LIB_A)
+	@make -C src $(LUNAR_A)
 
 tests : FORCE
 	@make -C tests

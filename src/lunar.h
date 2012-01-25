@@ -6,6 +6,8 @@
 #include "numarray.h"
 #include "lualib.h"
 
+int luaopen_lunar(lua_State *L);
+
 struct Array *lunar_checkarray1(lua_State *L, int pos);
 void         *lunar_checkarray2(lua_State *L, int pos, enum ArrayType T, int *N);
 void          lunar_pusharray1(lua_State *L, struct Array *A);

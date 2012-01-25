@@ -8,14 +8,13 @@ extern "C" {
 #include "lunar.h"
 }
 
-
 static int upcast(lua_State *L);
-void _stack_dump(lua_State *L);
 
 int main()
 {
   lua_State *L = lua_open();
   luaL_openlibs(L);
+  luaopen_lunar(L);
 
   lua_register(L, "upcast", upcast);
 

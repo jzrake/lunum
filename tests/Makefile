@@ -1,17 +1,17 @@
 
 
-LUA_HOME = /usr/local
-LUA = -I$(LUA_HOME)/include -L$(LUA_HOME)/lib -llua
+LUA      = -I$(LUA_HOME)/include -L$(LUA_HOME)/lib -llua
+LUNAR    = -I../src -L../src -llunar 
 
 EXE = capi cplus
 
 default : $(EXE)
 
 capi : capi.c ../src/liblunar.a
-	$(CC) $(CFLAGS) -std=c99 -o $@ $< -I../src -L../src -llunar $(LUA) -lm
+	$(CC) $(CFLAGS) -std=c99 -o $@ $< $(LUNAR) $(LUA) $(CLIBS)
 
 cplus : cplus.cpp ../src/liblunar.a
-	$(CXX) $(CFLAGS) -o $@ $< -I../src -L../src -llunar $(LUA) -lm
+	$(CXX) $(CFLAGS) -o $@ $< $(LUNAR) $(LUA) $(CLIBS)
 
 clean :
 	rm -f $(EXE)

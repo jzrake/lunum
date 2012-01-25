@@ -1,8 +1,6 @@
 
 
 
-require 'lunar'
-
 local array = lunar.array
 
 
