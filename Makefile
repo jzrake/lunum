@@ -20,7 +20,7 @@
 # Configuration for the host platform
 # ------------------------------------------------------------------------------
 export OSNAME       = $(shell uname)
-export LUA_HOME     = /usr/local
+export LUA_HOME    ?= /usr/local
 export CFLAGS       = -Wall -O2 -fPIC
 
 ifeq ($(OSNAME), Linux)
