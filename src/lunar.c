@@ -3,13 +3,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <complex.h>
 #include <math.h>
 
 #include "lualib.h"
 #include "lauxlib.h"
 #include "lunar.h"
-
 
 
 
@@ -196,7 +194,7 @@ int luaC_array__tostring(lua_State *L)
 
   lua_pushstring(L, "  [ ");
   int nstr = 1;
-  for (size_t n=0; n<A->size; ++n) {
+  for (int n=0; n<A->size; ++n) {
 
     char s[64];
 
@@ -306,7 +304,7 @@ int _array_binary_op2(lua_State *L, enum ArrayOperation op)
     luaL_error(L, "arrays could not be broadcast together with shapes (%d) (%d)",
 	       A->size, B->size);
   }
-  const size_t N = A->size;
+  const int N = A->size;
   enum ArrayType T = (A->type >= B->type) ? A->type : B->type;
 
   struct Array A_ = (A->type == T) ? *A : array_new_copy(A, T);
@@ -416,7 +414,7 @@ int luaC_lunar_array(lua_State *L)
 
 int luaC_lunar_zeros(lua_State *L)
 {
-  const size_t N = luaL_checkinteger(L, 1);
+  const int N = luaL_checkinteger(L, 1);
   const enum ArrayType T = (enum ArrayType) luaL_optinteger(L, 2, ARRAY_TYPE_DOUBLE);
   struct Array A = array_new_zeros(N, T);
   lunar_pusharray1(L, &A);
@@ -474,7 +472,7 @@ void _unary_func(lua_State *L, double(*f)(double), Complex(*g)(Complex))
     if (A->type <= ARRAY_TYPE_DOUBLE) {
       struct Array B = array_new_copy(A, ARRAY_TYPE_DOUBLE);
       double *b = (double*) B.data;
-      for (size_t i=0; i<B.size; ++i) b[i] = f(b[i]);
+      for (int i=0; i<B.size; ++i) b[i] = f(b[i]);
       lunar_pusharray1(L, &B);
     }
     else if (A->type == ARRAY_TYPE_COMPLEX) {
@@ -485,7 +483,7 @@ void _unary_func(lua_State *L, double(*f)(double), Complex(*g)(Complex))
 
       struct Array B = array_new_copy(A, ARRAY_TYPE_COMPLEX);
       Complex *b = (Complex*) B.data;
-      for (size_t i=0; i<B.size; ++i) b[i] = g(b[i]);
+      for (int i=0; i<B.size; ++i) b[i] = g(b[i]);
       lunar_pusharray1(L, &B);
     }
   }

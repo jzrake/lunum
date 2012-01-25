@@ -3,20 +3,22 @@
 
 #include <stdlib.h>
 #include <math.h>
+#include <complex.h>
 #include "numarray.h"
 
+typedef double complex Complex;
 
 
-#define EXPR_ADD(T) {for(size_t i=0;i<N;++i)((T*)c)[i]=((T*)a)[i]+((T*)b)[i];}
-#define EXPR_SUB(T) {for(size_t i=0;i<N;++i)((T*)c)[i]=((T*)a)[i]-((T*)b)[i];}
-#define EXPR_MUL(T) {for(size_t i=0;i<N;++i)((T*)c)[i]=((T*)a)[i]*((T*)b)[i];}
-#define EXPR_DIV(T) {for(size_t i=0;i<N;++i)((T*)c)[i]=((T*)a)[i]/((T*)b)[i];}
-#define EXPR_POW(T) {for(size_t i=0;i<N;++i)((T*)c)[i]= pow(((T*)a)[i],((T*)b)[i]);}
-#define EXPR_COW(T) {for(size_t i=0;i<N;++i)((T*)c)[i]=cpow(((T*)a)[i],((T*)b)[i]);}
+#define EXPR_ADD(T) {for(int i=0;i<N;++i)((T*)c)[i]=((T*)a)[i]+((T*)b)[i];}
+#define EXPR_SUB(T) {for(int i=0;i<N;++i)((T*)c)[i]=((T*)a)[i]-((T*)b)[i];}
+#define EXPR_MUL(T) {for(int i=0;i<N;++i)((T*)c)[i]=((T*)a)[i]*((T*)b)[i];}
+#define EXPR_DIV(T) {for(int i=0;i<N;++i)((T*)c)[i]=((T*)a)[i]/((T*)b)[i];}
+#define EXPR_POW(T) {for(int i=0;i<N;++i)((T*)c)[i]= pow(((T*)a)[i],((T*)b)[i]);}
+#define EXPR_COW(T) {for(int i=0;i<N;++i)((T*)c)[i]=cpow(((T*)a)[i],((T*)b)[i]);}
 
-#define EXPR_ASSIGN0(T,val) {for(size_t i=0;i<N;++i)((T*)a)[i]=val;}
-#define EXPR_ASSIGN1(T,val) {for(size_t i=0;i<N;++i)((T*)a)[i]=*((T*)val);}
-#define EXPR_ASSIGN2(Ta,Tb) {for(size_t i=0;i<N;++i)((Ta*)a)[i]=((Tb*)b)[i];}
+#define EXPR_ASSIGN0(T,val) {for(int i=0;i<N;++i)((T*)a)[i]=val;}
+#define EXPR_ASSIGN1(T,val) {for(int i=0;i<N;++i)((T*)a)[i]=*((T*)val);}
+#define EXPR_ASSIGN2(Ta,Tb) {for(int i=0;i<N;++i)((Ta*)a)[i]=((Tb*)b)[i];}
 
 
 
@@ -34,7 +36,7 @@ char *array_typename(enum ArrayType T)
   }
 }
 
-struct Array array_new_zeros(size_t N, enum ArrayType T)
+struct Array array_new_zeros(int N, enum ArrayType T)
 {
   struct Array A;
   A.data = malloc(N*array_sizeof(T));
@@ -72,7 +74,7 @@ void array_del(struct Array *A)
 void array_binary_op(const struct Array *A, const struct Array *B,
                      struct Array *C, enum ArrayOperation op)
 {
-  const size_t N = A->size;
+  const int N = A->size;
   const void *a = A->data;
   const void *b = B->data;
   void *c = C->data;
@@ -136,7 +138,7 @@ void array_binary_op(const struct Array *A, const struct Array *B,
   }
 }
 
-size_t array_sizeof(enum ArrayType T)
+int array_sizeof(enum ArrayType T)
 {
   switch (T) {
   case ARRAY_TYPE_CHAR    : return sizeof(char);
@@ -152,8 +154,8 @@ size_t array_sizeof(enum ArrayType T)
 
 void array_assign_from_scalar(struct Array *A, const void *val)
 {
-  const size_t N = A->size;
-  void *a = A->data;
+  const int N = A->size;
+  void     *a = A->data;
 
   switch (A->type) {
   case ARRAY_TYPE_CHAR    : EXPR_ASSIGN1(char   , val) ; break;
@@ -170,7 +172,7 @@ void array_assign_from_array(struct Array *A, const struct Array *B)
 {
   void        *a = A->data;
   const void  *b = B->data;
-  const size_t N = B->size;
+  const int    N = B->size;
 
   switch (A->type) {
   case ARRAY_TYPE_CHAR:

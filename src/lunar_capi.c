@@ -29,7 +29,7 @@ struct Array *lunar_checkarray1(lua_State *L, int pos)
   return (struct Array*) luaL_checkudata(L, pos, "array");
 }
 
-void *lunar_checkarray2(lua_State *L, int pos, enum ArrayType T, size_t *N)
+void *lunar_checkarray2(lua_State *L, int pos, enum ArrayType T, int *N)
 {
   lua_pushvalue(L, pos);
   const int top = lua_gettop(L);
@@ -63,7 +63,7 @@ void lunar_pusharray1(lua_State *L, struct Array *B)
   *A = *B;
 }
 
-void lunar_pusharray2(lua_State *L, void *data, enum ArrayType T, size_t N)
+void lunar_pusharray2(lua_State *L, void *data, enum ArrayType T, int N)
 {
   struct Array *A = (struct Array*) lua_newuserdata(L, sizeof(struct Array));
   luaL_getmetatable(L, "array");
@@ -80,7 +80,7 @@ void lunar_totable(lua_State *L, int pos)
   const void *a = A->data;
 
   lua_newtable(L);
-  for (size_t i=0; i<A->size; ++i) {
+  for (int i=0; i<A->size; ++i) {
 
     lua_pushnumber(L, i+1);
 
@@ -98,7 +98,7 @@ void lunar_totable(lua_State *L, int pos)
   }
 }
 
-int lunar_upcast(lua_State *L, int pos, enum ArrayType T, size_t N)
+int lunar_upcast(lua_State *L, int pos, enum ArrayType T, int N)
 // -----------------------------------------------------------------------------
 // If the object at position 'pos' is already an array of type 'T', then push
 // nothing and return 0. If the type is not 'T', then return 1 and push a copy
@@ -132,7 +132,7 @@ int lunar_upcast(lua_State *L, int pos, enum ArrayType T, size_t N)
 
     struct Array A = array_new_zeros(lua_objlen(L, pos), T);
 
-    for (size_t i=0; i<A.size; ++i) {
+    for (int i=0; i<A.size; ++i) {
 
       lua_pushnumber(L, i+1);
       lua_gettable(L, pos);
