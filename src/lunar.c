@@ -170,6 +170,7 @@ int luaopen_lunar(lua_State *L)
   lua_setfield(L, 1, "I");
 
   lua_setglobal(L, "lunar");
+#include "array_class.lc" // sets the lunar.__array_methods table
 
   return 0;
 }
