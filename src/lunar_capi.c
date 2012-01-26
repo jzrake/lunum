@@ -8,25 +8,54 @@
 #include "lauxlib.h"
 
 
+static int luaC_array_astable(lua_State *L);
+static int luaC_array_dtype(lua_State *L);
+static int luaC_array_shape(lua_State *L);
 
 
-void lunar_pushcomplex(lua_State *L, Complex z)
+
+void lunar_pusharray1(lua_State *L, struct Array *B)
 {
-  Complex *w = (Complex*) lua_newuserdata(L, sizeof(Complex));
-  luaL_getmetatable(L, "complex");
+  lua_newtable(L);
+
+  lua_pushcfunction(L, luaC_array_dtype);
+  lua_setfield(L, -2, "dtype");
+
+  lua_pushcfunction(L, luaC_array_shape);
+  lua_setfield(L, -2, "shape");
+
+  lua_pushcfunction(L, luaC_array_astable);
+  lua_setfield(L, -2, "astable");
+
+  struct Array *A = (struct Array*) lua_newuserdata(L, sizeof(struct Array));
+  *A = *B;
+
+  lua_setfield(L, -2, "__cstruct");
+  luaL_getmetatable(L, "array");
   lua_setmetatable(L, -2);
-  *w = z;
 }
 
-Complex lunar_checkcomplex(lua_State *L, int n)
+void lunar_pusharray2(lua_State *L, void *data, enum ArrayType T, int N)
 {
-  Complex *w = (Complex*) luaL_checkudata(L, n, "complex");
-  return *w;
+  struct Array A = array_new_zeros(N, T);
+  memcpy(A.data, data, N*array_sizeof(T));
+  lunar_pusharray1(L, &A);
 }
+
 
 struct Array *lunar_checkarray1(lua_State *L, int pos)
 {
-  return (struct Array*) luaL_checkudata(L, pos, "array");
+  if (!lunar_hasmetatable(L, pos, "array")) {
+    luaL_error(L, "bad argument #%d (array expected, got %s)",
+	       pos, lua_typename(L, lua_type(L, pos)));
+  }
+  lua_pushstring(L, "__cstruct");
+  lua_rawget(L, pos);
+
+  struct Array* A = (struct Array*) lua_touserdata(L, -1);
+  lua_pop(L, 1);
+
+  return A;
 }
 
 void *lunar_checkarray2(lua_State *L, int pos, enum ArrayType T, int *N)
@@ -43,9 +72,9 @@ void *lunar_checkarray2(lua_State *L, int pos, enum ArrayType T, int *N)
     lua_call(L, 2, 1);
   }
 
-  struct Array *A = (struct Array*) luaL_checkudata(L, top, "array");
+  struct Array *A = lunar_checkarray1(L, top);
   if (A->dtype != T) {
-    luaL_error(L, "expected array of dtype %s, got %s\n",
+    luaL_error(L, "expected array of type %s, got %s\n",
                array_typename(T), array_typename(A->dtype));
   }
   lua_replace(L, pos);
@@ -55,28 +84,12 @@ void *lunar_checkarray2(lua_State *L, int pos, enum ArrayType T, int *N)
 }
 
 
-void lunar_pusharray1(lua_State *L, struct Array *B)
+
+
+
+void lunar_astable(lua_State *L, int pos)
 {
-  struct Array *A = (struct Array *) lua_newuserdata(L, sizeof(struct Array));
-  luaL_getmetatable(L, "array");
-  lua_setmetatable(L, -2);
-  *A = *B;
-}
-
-void lunar_pusharray2(lua_State *L, void *data, enum ArrayType T, int N)
-{
-  struct Array *A = (struct Array*) lua_newuserdata(L, sizeof(struct Array));
-  luaL_getmetatable(L, "array");
-  lua_setmetatable(L, -2);
-
-  *A = array_new_zeros(N, T);
-  memcpy(A->data, data, N*array_sizeof(T));
-}
-
-
-void lunar_totable(lua_State *L, int pos)
-{
-  struct Array *A = (struct Array*) luaL_checkudata(L, pos, "array");
+  struct Array *A = lunar_checkarray1(L, pos);
   const void *a = A->data;
 
   lua_newtable(L);
@@ -98,6 +111,22 @@ void lunar_totable(lua_State *L, int pos)
   }
 }
 
+void lunar_pushcomplex(lua_State *L, Complex z)
+{
+  Complex *w = (Complex*) lua_newuserdata(L, sizeof(Complex));
+  luaL_getmetatable(L, "complex");
+  lua_setmetatable(L, -2);
+  *w = z;
+}
+
+Complex lunar_checkcomplex(lua_State *L, int n)
+{
+  Complex *w = (Complex*) luaL_checkudata(L, n, "complex");
+  return *w;
+}
+
+
+
 int lunar_upcast(lua_State *L, int pos, enum ArrayType T, int N)
 // -----------------------------------------------------------------------------
 // If the object at position 'pos' is already an array of dtype 'T', then push
@@ -112,7 +141,7 @@ int lunar_upcast(lua_State *L, int pos, enum ArrayType T, int N)
   // ---------------------------------------------------------------------------
   if (lunar_hasmetatable(L, pos, "array")) {
 
-    struct Array *A = (struct Array*) lua_touserdata(L, pos);
+    struct Array *A = lunar_checkarray1(L, pos);
 
     if (A->dtype == T) {
       return 0;
@@ -217,3 +246,27 @@ void *lunar_tovalue(lua_State *L, enum ArrayType T)
   return y;
 }
 
+
+
+
+
+
+int luaC_array_dtype(lua_State *L)
+{
+  struct Array *A = lunar_checkarray1(L, 1);
+  lua_pushstring(L, array_typename(A->dtype));
+  return 1;
+}
+
+int luaC_array_shape(lua_State *L)
+{
+  struct Array *A = lunar_checkarray1(L, 1);
+  lunar_pusharray2(L, A->shape, ARRAY_TYPE_INT, A->ndims);
+  return 1;
+}
+
+int luaC_array_astable(lua_State *L)
+{
+  lunar_astable(L, 1);
+  return 1;
+}

@@ -66,7 +66,7 @@ end
 local function test8()
    local A = lunar.array({1,2,3,4,5,6,7,8})
    lunar.resize(A, {4,2})
-   print(lunar.shape(A))
+   print(A:shape())
    print("A(0,0) = ", A(0,0))
    print("A(0,1) = ", A(0,1))
    print("A(1,0) = ", A(1,0))
@@ -76,6 +76,8 @@ local function test8()
    print("A(3,0) = ", A(3,0))
    print("A(3,1) = ", A(3,1))
 end
+
+
 
 
 test1()
