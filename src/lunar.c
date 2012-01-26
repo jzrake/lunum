@@ -170,7 +170,6 @@ int luaopen_lunar(lua_State *L)
   lua_setfield(L, 1, "I");
 
   lua_setglobal(L, "lunar");
-  //  luaL_dofile(L, "/Users/jzrake/Work/lunar/src/lunar_util.lua");
 
   return 0;
 }

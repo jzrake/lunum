@@ -66,7 +66,7 @@ end
 local function test8()
    local A = lunar.array({1,2,3,4,5,6,7,8})
    lunar.resize(A, {4,2})
-   print(A:shape())
+   print(unpack(A:shape()))
    print("A(0,0) = ", A(0,0))
    print("A(0,1) = ", A(0,1))
    print("A(1,0) = ", A(1,0))
@@ -82,8 +82,8 @@ local function test9()
    local B = lunar.array({1,2,3,4,5,6,7,8,9,10,11,12})
    lunar.resize(B, {2,1,3,2})
 
-   for i in B:indices() do
-      print("B", lunar.array(i), "=", B(unpack(i)))
+   for i,j,k,m in B:indices() do
+      print(string.format("B(%d,%d,%d,%d) = %f", i,j,k,m, B(i,j,k,m)))
    end
 end
 
