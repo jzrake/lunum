@@ -78,6 +78,16 @@ local function test8()
 end
 
 
+local function test9()
+   local B = lunar.array({1,2,3,4,5,6,7,8,9,10,11,12})
+   lunar.resize(B, {2,1,3,2})
+
+   for i in B:indices() do
+      print("B", lunar.array(i), "=", B(unpack(i)))
+   end
+end
+
+
 
 
 test1()
@@ -89,3 +99,4 @@ test5()
 test6()
 test7()
 test8()
+test9()

@@ -33,6 +33,7 @@
 
 static int luaC_lunar_array(lua_State *L);
 static int luaC_lunar_zeros(lua_State *L);
+static int luaC_lunar_range(lua_State *L);
 static int luaC_lunar_resize(lua_State *L);
 
 
@@ -131,6 +132,7 @@ int luaopen_lunar(lua_State *L)
   lua_newtable(L);
   LUA_NEW_MODULEMETHOD(L, lunar, array);
   LUA_NEW_MODULEMETHOD(L, lunar, zeros);
+  LUA_NEW_MODULEMETHOD(L, lunar, range);
   LUA_NEW_MODULEMETHOD(L, lunar, resize);
 
   LUA_NEW_MODULEMETHOD(L, lunar, sin);
@@ -168,7 +170,7 @@ int luaopen_lunar(lua_State *L)
   lua_setfield(L, 1, "I");
 
   lua_setglobal(L, "lunar");
-
+  //  luaL_dofile(L, "/Users/jzrake/Work/lunar/src/lunar_util.lua");
 
   return 0;
 }
@@ -422,6 +424,7 @@ int _complex_binary_op2(lua_State *L, enum ArrayOperation op)
 
 
 
+
 int luaC_lunar_array(lua_State *L)
 {
   const enum ArrayType T = (enum ArrayType) luaL_optinteger(L, 2, ARRAY_TYPE_DOUBLE);
@@ -435,6 +438,17 @@ int luaC_lunar_zeros(lua_State *L)
   const enum ArrayType T = (enum ArrayType) luaL_optinteger(L, 2, ARRAY_TYPE_DOUBLE);
   struct Array A = array_new_zeros(N, T);
   lunar_pusharray1(L, &A);
+  return 1;
+}
+
+int luaC_lunar_range(lua_State *L)
+{
+  const int N = luaL_checkinteger(L, 1);
+  struct Array A = array_new_zeros(N, ARRAY_TYPE_INT);
+  lunar_pusharray1(L, &A);
+  for (int i=0; i<N; ++i) {
+    ((int*)A.data)[i] = i;
+  }
   return 1;
 }
 
@@ -459,6 +473,8 @@ int luaC_lunar_resize(lua_State *L)
 
   return 0;
 }
+
+
 
 
 

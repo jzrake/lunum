@@ -4,35 +4,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define LUNAR_PRIVATE_API
 #include "lunar.h"
 #include "lauxlib.h"
 
 
-static int luaC_array_astable(lua_State *L);
-static int luaC_array_dtype(lua_State *L);
-static int luaC_array_shape(lua_State *L);
-
-
-
 void lunar_pusharray1(lua_State *L, struct Array *B)
 {
-  lua_newtable(L);
-
-  lua_pushcfunction(L, luaC_array_dtype);
-  lua_setfield(L, -2, "dtype");
-
-  lua_pushcfunction(L, luaC_array_shape);
-  lua_setfield(L, -2, "shape");
-
-  lua_pushcfunction(L, luaC_array_astable);
-  lua_setfield(L, -2, "astable");
-
-  struct Array *A = (struct Array*) lua_newuserdata(L, sizeof(struct Array));
-  *A = *B;
-
-  lua_setfield(L, -2, "__cstruct");
-  luaL_getmetatable(L, "array");
-  lua_setmetatable(L, -2);
+  _lunar_register_array(L, B);
 }
 
 void lunar_pusharray2(lua_State *L, void *data, enum ArrayType T, int N)
@@ -47,7 +26,7 @@ struct Array *lunar_checkarray1(lua_State *L, int pos)
 {
   if (!lunar_hasmetatable(L, pos, "array")) {
     luaL_error(L, "bad argument #%d (array expected, got %s)",
-	       pos, lua_typename(L, lua_type(L, pos)));
+               pos, lua_typename(L, lua_type(L, pos)));
   }
   lua_pushstring(L, "__cstruct");
   lua_rawget(L, pos);
@@ -246,27 +225,3 @@ void *lunar_tovalue(lua_State *L, enum ArrayType T)
   return y;
 }
 
-
-
-
-
-
-int luaC_array_dtype(lua_State *L)
-{
-  struct Array *A = lunar_checkarray1(L, 1);
-  lua_pushstring(L, array_typename(A->dtype));
-  return 1;
-}
-
-int luaC_array_shape(lua_State *L)
-{
-  struct Array *A = lunar_checkarray1(L, 1);
-  lunar_pusharray2(L, A->shape, ARRAY_TYPE_INT, A->ndims);
-  return 1;
-}
-
-int luaC_array_astable(lua_State *L)
-{
-  lunar_astable(L, 1);
-  return 1;
-}

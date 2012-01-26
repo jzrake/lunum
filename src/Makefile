@@ -14,10 +14,13 @@ lunar.o : lunar.c
 lunar_capi.o : lunar_capi.c
 	$(CC) $(CFLAGS) -std=c99 -c $< -I$(LUA_HOME)/include
 
-$(LUNAR_A)  : numarray.o lunar.o lunar_capi.o
+array_class.o : array_class.c
+	$(CC) $(CFLAGS) -std=c99 -c $< -I$(LUA_HOME)/include
+
+$(LUNAR_A)  : numarray.o lunar.o lunar_capi.o array_class.o
 	$(AR) $@ $?
 
-$(LUNAR_SO) : numarray.o lunar.o lunar_capi.o
+$(LUNAR_SO) : numarray.o lunar.o lunar_capi.o array_class.o
 	$(SO) -o $(LUNAR_SO) $^
 
 clean :
