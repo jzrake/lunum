@@ -14,7 +14,7 @@ local function test1()
 
    print(getmetatable(A).__len)
    print(getmetatable(A).__gc)
-   print("length is", #A)
+   print("length is", A:size())
 end
 
 local function test2()
@@ -88,6 +88,19 @@ local function test9()
 end
 
 
+local function test10()
+   local B = lunar.range(10)
+   print(lunar.apply(function(x,y,z) return x+y+z end, B, B, B))
+
+   local C = lunar.zeros({4,4}, lunar.complex)
+   print(C)
+   print(unpack(C:shape()))
+
+   lunar.resize(C, {4,4})
+   print(unpack(C:shape()))
+end
+
+
 
 
 test1()
@@ -100,3 +113,4 @@ test6()
 test7()
 test8()
 test9()
+test10()

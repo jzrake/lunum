@@ -21,5 +21,17 @@ local function indices(A)
    return f
 end
 
+local function apply(f,...)
+   local A = {...}
+   local B = lunar.zeros(A[1]:size(), A[1]:dtype('enum'))
+   for i=0,B:size()-1 do
+      local x = { }
+      for d=1,#A do x[d] = A[d][i] end
+      B[i] = f(unpack(x))
+   end
+   return B
+end
+
 lunar.__array_methods = { }
 lunar.__array_methods.indices = indices
+lunar.apply = apply

@@ -434,11 +434,32 @@ int luaC_lunar_array(lua_State *L)
 
 int luaC_lunar_zeros(lua_State *L)
 {
-  const int N = luaL_checkinteger(L, 1);
-  const enum ArrayType T = (enum ArrayType) luaL_optinteger(L, 2, ARRAY_TYPE_DOUBLE);
-  struct Array A = array_new_zeros(N, T);
-  lunar_pusharray1(L, &A);
-  return 1;
+  if (lua_isnumber(L, 1)) {
+    const int N = luaL_checkinteger(L, 1);
+    const enum ArrayType T = (enum ArrayType) luaL_optinteger(L, 2, ARRAY_TYPE_DOUBLE);
+    struct Array A = array_new_zeros(N, T);
+    lunar_pusharray1(L, &A);
+    return 1;
+  }
+  else if (lua_istable(L, 1) || lunar_hasmetatable(L, 1, "array")) {
+
+    int Nd;
+    int *N = (int*) lunar_checkarray2(L, 1, ARRAY_TYPE_INT, &Nd);
+    const enum ArrayType T = (enum ArrayType) luaL_optinteger(L, 2, ARRAY_TYPE_DOUBLE);
+
+    int ntot = 1;
+    for (int d=0; d<Nd; ++d) ntot *= N[d];
+    struct Array A = array_new_zeros(ntot, T);
+
+    array_resize(&A, N, Nd);
+    lunar_pusharray1(L, &A);
+
+    return 1;
+  }
+  else {
+    luaL_error(L, "argument must be either number, table, or array");
+    return 0;
+  }
 }
 
 int luaC_lunar_range(lua_State *L)
@@ -465,11 +486,7 @@ int luaC_lunar_resize(lua_State *L)
     luaL_error(L, "new and old total sizes do not agree");
     return 0;
   }
-  if (A->shape) free(A->shape);
-
-  A->ndims = Nd;
-  A->shape = (int*) malloc(Nd*sizeof(int));
-  memcpy(A->shape, N, Nd*sizeof(int));
+  array_resize(A, N, Nd);
 
   return 0;
 }

@@ -40,5 +40,6 @@ void          array_binary_op(const struct Array *A,
 			      const struct Array *B,
 			      struct Array *C, enum ArrayOperation op);
 int           array_sizeof(enum ArrayType T);
+int           array_resize(struct Array *A, int *N, int Nd);
 
 #endif // __Array_HEADER__

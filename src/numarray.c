@@ -1,6 +1,6 @@
 
 
-
+#include <string.h>
 #include <stdlib.h>
 #include <math.h>
 #include <complex.h>
@@ -76,6 +76,23 @@ void array_del(struct Array *A)
   A->size = 0;
   A->data = NULL;
   A->shape = NULL;
+}
+
+int array_resize(struct Array *A, int *N, int Nd)
+{
+  int ntot = 1;
+  for (int d=0; d<Nd; ++d) ntot *= N[d];
+
+  if (A->size != ntot) {
+    return 1;
+  }
+  if (A->shape) free(A->shape);
+
+  A->ndims = Nd;
+  A->shape = (int*) malloc(Nd*sizeof(int));
+  memcpy(A->shape, N, Nd*sizeof(int));
+
+  return 0;
 }
 
 void array_binary_op(const struct Array *A, const struct Array *B,

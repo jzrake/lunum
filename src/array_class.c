@@ -1,12 +1,14 @@
 
 
 #define LUNAR_PRIVATE_API
+#include <string.h>
 #include "lunar.h"
 #include "lauxlib.h"
 
 
 static int luaC_array_dtype(lua_State *L);
 static int luaC_array_shape(lua_State *L);
+static int luaC_array_size(lua_State *L);
 static int luaC_array_astable(lua_State *L);
 
 
@@ -19,6 +21,9 @@ void _lunar_register_array(lua_State *L, struct Array *B)
 
   lua_pushcfunction(L, luaC_array_shape);
   lua_setfield(L, -2, "shape");
+
+  lua_pushcfunction(L, luaC_array_size);
+  lua_setfield(L, -2, "size");
 
   lua_pushcfunction(L, luaC_array_astable);
   lua_setfield(L, -2, "astable");
@@ -41,8 +46,18 @@ void _lunar_register_array(lua_State *L, struct Array *B)
 
 
 int luaC_array_dtype(lua_State *L)
+// If there is no argument, return a string description of the data type. If
+// the string 'enum' is given as the first argument, then return the enumated
+// value of the Array's type.
 {
   struct Array *A = lunar_checkarray1(L, 1);
+  if (lua_isstring(L, 2)) {
+    if (strcmp(lua_tostring(L, 2), "enum") == 0) {
+      lua_pushnumber(L, A->dtype);
+      return 1;
+    }
+  }
+
   lua_pushstring(L, array_typename(A->dtype));
   return 1;
 }
@@ -51,8 +66,16 @@ int luaC_array_shape(lua_State *L)
 {
   struct Array *A = lunar_checkarray1(L, 1);
   lunar_pusharray2(L, A->shape, ARRAY_TYPE_INT, A->ndims);
-  lua_insert(L, 1);
-  return luaC_array_astable(L);
+  lunar_astable(L, 2);
+  lua_replace(L, -2);
+  return 1;
+}
+
+int luaC_array_size(lua_State *L)
+{
+  struct Array *A = lunar_checkarray1(L, 1);
+  lua_pushnumber(L, A->size);
+  return 1;
 }
 
 int luaC_array_astable(lua_State *L)
