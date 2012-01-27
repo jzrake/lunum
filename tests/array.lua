@@ -89,8 +89,19 @@ end
 
 
 local function test10()
-   local B = lunar.range(10)
-   print(lunar.apply(function(x,y,z) return x+y+z end, B, B, B))
+   print("testing apply function, and resize function")
+
+   local B = lunar.range(100)
+   local C = lunar.apply(function(x,y,z) return x+y+z end, B, B, B)
+
+   local B = lunar.zeros({10,10})
+   local C = lunar.zeros({10,10}, lunar.complex)
+
+   B[0] = 1
+   C[0] = lunar.I
+
+   local D = lunar.apply(function(x,y) return x+y end, B, C)
+   print("return array has type", D:dtype(), D)
 
    local C = lunar.zeros({4,4}, lunar.complex)
    print(C)

@@ -22,8 +22,24 @@ local function indices(A)
 end
 
 local function apply(f,...)
-   local A = {...}
-   local B = lunar.zeros(A[1]:size(), A[1]:dtype('enum'))
+   local A  = {...}
+   local T  = A[1]:dtype('enum')
+   local s1 = A[1]:shape()
+   local go = true
+
+   for d=2,#A do
+      local Td = A[d]:dtype('enum')
+      if T < Td then T = Td end
+      local sd = A[d]:shape()
+      if #s1 ~= #sd then go = false end
+      for m=1,#sd do if s1[m] ~= sd[m] then go = false end end
+   end
+
+   if not go then
+      error('arguments of incompatible shapes.')
+   end
+
+   local B = lunar.zeros(s1, T)
    for i=0,B:size()-1 do
       local x = { }
       for d=1,#A do x[d] = A[d][i] end
