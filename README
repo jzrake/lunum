@@ -38,6 +38,14 @@ just as fast (if not faster). It may be loaded as a Lua
 module through a shared object file, or linked statically to
 embed in an application.
 
+Lunar's goals are to provide flexible and robust facilities for the
+manipulation of multi-dimensional numeric arrays. It is not intended
+to be a linear algebra or other scientific computing library, but
+rather a direct extension to the basic Lua language to include arrays
+that feel 'native' to Lua. Thus it is more slender than the 'numlua'
+project. It also differs from numlua in that it has no dependencies,
+and features a portable and automatic build sequence.
+
 
 
 FEATURES
@@ -69,7 +77,7 @@ FEATURES
 CONVENTIONS
 
 Unlike Lua tables with numeric keys, lunar arrays start from
-index 0. This is to be consistent with C, python, and
+index 0. This is to be consistent with C, Python, and
 numpy. The Luar C API provides functions for pushing new
 lunar arrays onto the stack, and obtaining them from the
 stack.
