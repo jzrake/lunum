@@ -97,18 +97,18 @@ local function test10()
    local B = lunar.zeros({10,10})
    local C = lunar.zeros({10,10}, lunar.complex)
 
-   B[0] = 1
-   C[0] = lunar.I
+   B[{1,1}] = 1
+   C[{1,1}] = lunar.I
 
    local D = lunar.apply(function(x,y) return x+y end, B, C)
-   print("return array has type", D:dtype(), D)
+   print("return array has type", D:dtype())
 
    local C = lunar.zeros({4,4}, lunar.complex)
    print(C)
-   print(unpack(C:shape()))
+   print(C:shape('array'))
 
    lunar.resize(C, {4,4})
-   print(unpack(C:shape()))
+   print(C:shape('array'))
 end
 
 

@@ -89,6 +89,7 @@ static int _complex_binary_op1(lua_State *L, enum ArrayOperation op);
 static int _complex_binary_op2(lua_State *L, enum ArrayOperation op);
 
 static void _unary_func(lua_State *L, double(*f)(double), Complex(*g)(Complex));
+static int _get_index(lua_State *L, struct Array *A);
 
 static Complex ImaginaryUnit = I;
 
@@ -264,21 +265,18 @@ int luaC_array__call(lua_State *L)
 int luaC_array__index(lua_State *L)
 {
   struct Array *A = lunar_checkarray1(L, 1);
-  const int n = luaL_checkinteger(L, 2);
-
-  if (n >= A->size) {
-    luaL_error(L, "index %d out of bounds on array of length %d", n, A->size);
-  }
+  const int m = _get_index(L, A);
 
   switch (A->dtype) {
-  case ARRAY_TYPE_CHAR    : lua_pushnumber(L,    ((char   *)A->data)[n]); break;
-  case ARRAY_TYPE_SHORT   : lua_pushnumber(L,    ((short  *)A->data)[n]); break;
-  case ARRAY_TYPE_INT     : lua_pushnumber(L,    ((int    *)A->data)[n]); break;
-  case ARRAY_TYPE_LONG    : lua_pushnumber(L,    ((long   *)A->data)[n]); break;
-  case ARRAY_TYPE_FLOAT   : lua_pushnumber(L,    ((float  *)A->data)[n]); break;
-  case ARRAY_TYPE_DOUBLE  : lua_pushnumber(L,    ((double *)A->data)[n]); break;
-  case ARRAY_TYPE_COMPLEX : lunar_pushcomplex(L, ((Complex*)A->data)[n]); break;
+  case ARRAY_TYPE_CHAR    : lua_pushnumber(L,    ((char   *)A->data)[m]); break;
+  case ARRAY_TYPE_SHORT   : lua_pushnumber(L,    ((short  *)A->data)[m]); break;
+  case ARRAY_TYPE_INT     : lua_pushnumber(L,    ((int    *)A->data)[m]); break;
+  case ARRAY_TYPE_LONG    : lua_pushnumber(L,    ((long   *)A->data)[m]); break;
+  case ARRAY_TYPE_FLOAT   : lua_pushnumber(L,    ((float  *)A->data)[m]); break;
+  case ARRAY_TYPE_DOUBLE  : lua_pushnumber(L,    ((double *)A->data)[m]); break;
+  case ARRAY_TYPE_COMPLEX : lunar_pushcomplex(L, ((Complex*)A->data)[m]); break;
   }
+
   return 1;
 }
 
@@ -286,15 +284,12 @@ int luaC_array__index(lua_State *L)
 int luaC_array__newindex(lua_State *L)
 {
   struct Array *A = lunar_checkarray1(L, 1);
-  const int n = luaL_checkinteger(L, 2);
+  const int m = _get_index(L, A);
+
   const enum ArrayType T = A->dtype;
 
-  if (n >= A->size) {
-    luaL_error(L, "index %d out of bounds on array of length %d", n, A->size);
-  }
-
   void *val = lunar_tovalue(L, T);
-  memcpy((char*)A->data + array_sizeof(T)*n, val, array_sizeof(T));
+  memcpy((char*)A->data + array_sizeof(T)*m, val, array_sizeof(T));
   free(val);
 
   return 0;
@@ -552,4 +547,42 @@ void _unary_func(lua_State *L, double(*f)(double), Complex(*g)(Complex))
       lunar_pusharray1(L, &B);
     }
   }
+}
+
+int _get_index(lua_State *L, struct Array *A)
+{
+  int m = 0;
+
+  if (lua_isnumber(L, 2)) {
+    m = luaL_checkinteger(L, 2);
+
+    if (m >= A->size || m < 0) {
+      luaL_error(L, "index %d out of bounds on array of length %d", m, A->size);
+    }
+  }
+  else if (lua_istable(L, 2)) {
+    int Nd;
+    int *ind = (int*) lunar_checkarray2(L, 2, ARRAY_TYPE_INT, &Nd);
+
+    if (A->ndims != Nd) {
+      luaL_error(L, "wrong number of indices (%d) on array of dimension %d",
+		 Nd, A->ndims);
+    }
+    int *stride = (int*) malloc(A->ndims * sizeof(int));
+    stride[Nd-1] = 1;
+
+    for (int d=Nd-2; d>=0; --d) {
+      stride[d] = stride[d+1] * A->shape[d+1];
+    }
+
+    for (int d=0; d<A->ndims; ++d) {
+      if (ind[d] >= A->shape[d] || ind[d] < 0) {
+	luaL_error(L, "array indexed out of bounds (%d) on dimension %d of size %d",
+		   ind[d], d, A->shape[d]);
+      }
+      m += ind[d]*stride[d];
+    }
+    free(stride);
+  }
+  return m;
 }

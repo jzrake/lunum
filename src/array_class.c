@@ -46,11 +46,14 @@ void _lunar_register_array(lua_State *L, struct Array *B)
 
 
 int luaC_array_dtype(lua_State *L)
+// -----------------------------------------------------------------------------
 // If there is no argument, return a string description of the data type. If
 // the string 'enum' is given as the first argument, then return the enumated
 // value of the Array's type.
+// -----------------------------------------------------------------------------
 {
   struct Array *A = lunar_checkarray1(L, 1);
+
   if (lua_isstring(L, 2)) {
     if (strcmp(lua_tostring(L, 2), "enum") == 0) {
       lua_pushnumber(L, A->dtype);
@@ -63,9 +66,20 @@ int luaC_array_dtype(lua_State *L)
 }
 
 int luaC_array_shape(lua_State *L)
+// -----------------------------------------------------------------------------
+// If there is no argument, return the shape as a table. If the string 'array'
+// is given, return it as an array.
+// -----------------------------------------------------------------------------
 {
   struct Array *A = lunar_checkarray1(L, 1);
   lunar_pusharray2(L, A->shape, ARRAY_TYPE_INT, A->ndims);
+
+  if (lua_isstring(L, 2)) {
+    if (strcmp(lua_tostring(L, 2), "array") == 0) {
+      return 1;
+    }
+  }
+
   lunar_astable(L, 2);
   lua_replace(L, -2);
   return 1;
