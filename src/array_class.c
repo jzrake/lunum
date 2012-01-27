@@ -10,6 +10,7 @@ static int luaC_array_dtype(lua_State *L);
 static int luaC_array_shape(lua_State *L);
 static int luaC_array_size(lua_State *L);
 static int luaC_array_astable(lua_State *L);
+static int luaC_array_astype(lua_State *L);
 
 
 void _lunar_register_array(lua_State *L, struct Array *B)
@@ -27,6 +28,9 @@ void _lunar_register_array(lua_State *L, struct Array *B)
 
   lua_pushcfunction(L, luaC_array_astable);
   lua_setfield(L, -2, "astable");
+
+  lua_pushcfunction(L, luaC_array_astype);
+  lua_setfield(L, -2, "astype");
 
   lua_getglobal(L, "lunar");
   lua_getfield(L, -1, "__array_methods");
@@ -95,5 +99,14 @@ int luaC_array_size(lua_State *L)
 int luaC_array_astable(lua_State *L)
 {
   lunar_astable(L, 1);
+  return 1;
+}
+
+int luaC_array_astype(lua_State *L)
+{
+  struct Array *A = lunar_checkarray1(L, 1);
+  const enum ArrayType T = (enum ArrayType) luaL_checkinteger(L, 2);
+  struct Array B = array_new_copy(A, T);
+  lunar_pusharray1(L, &B);
   return 1;
 }
