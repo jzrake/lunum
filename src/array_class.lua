@@ -1,6 +1,6 @@
 
 
-local function indices(A)
+local function indices(A, kind)
    local N =  A:shape()
    local I = { }
 
@@ -18,7 +18,21 @@ local function indices(A)
       if I[1] == N[1] then return nil end
       return unpack(I)
    end
-   return f
+
+   local function g()
+      I[#N] = I[#N] + 1
+      for d=#N,2,-1 do
+         if I[d] == N[d] then
+            I[d] = 0
+            I[d-1] = I[d-1] + 1
+         end
+      end
+      if I[1] == N[1] then return nil end
+      return I
+   end
+   if kind == 'table' then return g
+   else return f
+   end
 end
 
 local function apply(f,...)

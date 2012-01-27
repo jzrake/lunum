@@ -85,6 +85,10 @@ local function test9()
    for i,j,k,m in B:indices() do
       print(string.format("B(%d,%d,%d,%d) = %f", i,j,k,m, B(i,j,k,m)))
    end
+
+   for I in B:indices('table') do
+      print(string.format("B(%d,%d,%d,%d) = %f", I[1],I[2],I[3],I[4], B[I]))
+   end
 end
 
 
