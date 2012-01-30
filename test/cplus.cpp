@@ -12,7 +12,7 @@ static int upcast(lua_State *L);
 
 int main()
 {
-  lua_State *L = lua_open();
+  lua_State *L = luaL_newstate();
   luaL_openlibs(L);
   luaopen_lunar(L);
 

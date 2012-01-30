@@ -14,7 +14,8 @@ U | | u  \| |\| |<|  \| |>  \/ _ \/  \| |_) |/
 
 INSTALLTION INSTRUCTIONS
 
-(1) source setup
+(1a) ./setup        [will download and install Lua to the currect directory]
+(1b) source ./setup [will also export build evironment for local Lua install]
 (2) make
 
 

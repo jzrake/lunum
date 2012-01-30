@@ -17,29 +17,84 @@
 # ------------------------------------------------------------------------------
 
 
-# Configuration for the host platform
-# ------------------------------------------------------------------------------
-export OSNAME       = $(shell uname)
-export LUA_HOME    ?= /usr/local
-export CFLAGS       = -Wall -O2 -fPIC
 
-ifeq ($(OSNAME), Linux)
-export SO    = $(CC) -O -shared
-export AR    = ar rcu
-export CLIBS = -lm -ldl
-endif
-
-ifeq ($(OSNAME), Darwin)
-export SO    = $(CC) -O -bundle -undefined dynamic_lookup 
-export AR    = ar rcu
-export CLIBS = 
-endif
+# System-specific things.
 # ------------------------------------------------------------------------------
 
+# C compiler icc, gcc, etc if other than system default
+# CC = cc
 
-INSTALL_TOP = $(shell pwd)
+# C++ compiler icpc, g++, etc if other than system default
+# CXX = c++
+
+# sometimes only -fpic works
+FPIC = -fPIC
+
+# Warning level flags
+WARN = -Wall
+
+# robust optimazation level
+OPTIM = -O2
+
+# debug flags, use -g for debug symbols
+DEBUG =
+
+# location of Lua install on this system
+LUA_HOME ?= $(PWD)/lua
+
+# where to install lunar library and include
+INSTALL_TOP = $(PWD)
+
+# C Flags
+CFLAGS = $(WARN) $(OPTIM) $(DEBUG) $(FPIC)
+
+
+# Configuration for common platforms. If you need to use a different linker,
+# archiver, or C libraries then uncomment the UNAME = Custom line below, and
+# edit the custom first block following.
+# ------------------------------------------------------------------------------
+UNAME = $(shell uname)
+#UNAME = Custom
+# ------------------------------------------------------------------------------
+#
+#
+ifeq ($(UNAME), Custom)
+# common for library links on Linux
+CLIBS = -lm -ldl
+# command for building shared libraries (this works for most Linux systems)
+SO = $(CC) -O -shared
+# command for generating static archives
+AR = ar rcu
+endif
+
+ifeq ($(UNAME), Linux)
+SO     = $(CC) -O -shared
+AR     = ar rcu
+CLIBS  = -lm -ldl
+endif
+
+ifeq ($(UNAME), Darwin)
+SO     = $(CC) -O -bundle -undefined dynamic_lookup
+AR     = ar rcu
+CLIBS  =
+endif
+
+
+
+# -------------------------------------------------
+# Ensure these values are passed to child Makefiles
+# -------------------------------------------------
+export CC
+export CXX
+export CFLAGS
+export LUA_HOME
+export SO
+export AR
+export CLIBS
+# -------------------------------------------------
+
+
 BUILD_TOP   = $(shell pwd)
-
 LIB_SO      = lunar.so
 LIB_A       = liblunar.a
 
@@ -57,8 +112,18 @@ HEADERS = \
 	$(INSTALL_TOP)/include/$(H2)
 
 
-
 default : $(LUNAR_SO) $(LUNAR_A)
+
+config : 
+	@echo "AR = $(AR)"
+	@echo "CC = $(CC)"
+	@echo "CXX = $(CXX)"
+	@echo "FPIC = $(FPIC)"
+	@echo "WARN = $(WARN)"
+	@echo "OPTIM = $(OPTIM)"
+	@echo "DEBUG = $(DEBUG)"
+	@echo "LUA_HOME = $(LUA_HOME)"
+	@echo "INSTALL_TOP = $(INSTALL_TOP)"
 
 test : $(LUNAR_SO) $(LUNAR_A)
 
