@@ -313,7 +313,6 @@ int _array_binary_op1(lua_State *L, enum ArrayOperation op)
     lunar_upcast(L, 2, A->dtype, A->size);
     lua_replace(L, 2);
   }
-
   return _array_binary_op2(L, op);
 }
 
@@ -369,26 +368,18 @@ int luaC_complex__pow(lua_State *L) { return _complex_binary_op1(L, ARRAY_OP_POW
 
 int _complex_binary_op1(lua_State *L, enum ArrayOperation op)
 {
-  if (!lua_isuserdata(L, 1)) {
-    double a = lua_tonumber(L, 1);
-    Complex *v = (Complex*) lua_newuserdata(L, sizeof(Complex));
-    luaL_getmetatable(L, "complex");
-    lua_setmetatable(L, -2);
-
-    *v = a;
+  if (lunar_hasmetatable(L, 1, "array") ||
+      lunar_hasmetatable(L, 2, "array")) {
+    return _array_binary_op1(L, op);
+  }
+  if (!lunar_hasmetatable(L, 1, "complex")) {
+    lunar_pushcomplex(L, lua_tonumber(L, 1));
     lua_replace(L, 1);
   }
-
-  if (!lua_isuserdata(L, 2)) {
-    double a = lua_tonumber(L, 2);
-    Complex *w = (Complex*) lua_newuserdata(L, sizeof(Complex));
-    luaL_getmetatable(L, "complex");
-    lua_setmetatable(L, -2);
-
-    *w = a;
+  if (!lunar_hasmetatable(L, 2, "complex")) {
+    lunar_pushcomplex(L, lua_tonumber(L, 2));
     lua_replace(L, 2);
   }
-
   return _complex_binary_op2(L, op);
 }
 
