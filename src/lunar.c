@@ -1,5 +1,4 @@
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -180,7 +179,7 @@ int luaopen_lunar(lua_State *L)
 
 
 // *****************************************************************************
-// Implementation of lunar.complex metatable
+// Implementation of lunar.array metatable
 //
 // *****************************************************************************
 int luaC_array__gc(lua_State *L)
