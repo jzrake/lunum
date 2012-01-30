@@ -138,7 +138,7 @@ int lunar_upcast(lua_State *L, int pos, enum ArrayType T, int N)
   // ---------------------------------------------------------------------------
   else if (lua_istable(L, pos)) {
 
-    struct Array A = array_new_zeros(lua_objlen(L, pos), T);
+    struct Array A = array_new_zeros(lua_rawlen(L, pos), T);
 
     for (int i=0; i<A.size; ++i) {
 

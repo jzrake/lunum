@@ -1,6 +1,6 @@
 #!/bin/bash
 
-lua="lua-5.1.4"
+lua="lua-5.2.0"
 luabin=$(pwd)/${lua}/bin
 
 
@@ -19,13 +19,6 @@ if [ ! -d ${lua} ]; then
     rm ${lua}.tar.gz
     cd ${lua}; make $arch; make install INSTALL_TOP=$(pwd); cd ..;
 fi
-
-if [ $(which lua) != ${luabin}/lua ]; then
-    echo "Adding local lua binary to path..."
-    export PATH=${luabin}:$PATH
-fi
-
-
 
 PATH=${PATH/${luabin}:/""} # Remove lua/bin from path if it exists
 

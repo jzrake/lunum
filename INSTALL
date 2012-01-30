@@ -22,5 +22,5 @@ INSTALLTION INSTRUCTIONS
 RUNNING TESTS
 
 (1) make test
-(2) lua tests/array.lua
+(2) lua test/array.lua
 
