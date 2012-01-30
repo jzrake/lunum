@@ -12,7 +12,7 @@ static int luaC_array_size(lua_State *L);
 static int luaC_array_astable(lua_State *L);
 static int luaC_array_astype(lua_State *L);
 
-#include "debug.c"
+
 void _lunar_register_array(lua_State *L, struct Array *B)
 {
   lua_newtable(L);

@@ -1,0 +1,39 @@
+#!/bin/bash
+
+lua="lua-5.1.4"
+luabin=$(pwd)/${lua}/bin
+
+
+if [ $(uname) == "Darwin" ]; then
+    arch="macosx"
+fi
+
+if [ $(uname) == "Linux" ]; then
+    arch="linux"
+fi
+
+if [ ! -d ${lua} ]; then
+    echo "Downloading and installing Lua..."
+    wget http://www.lua.org/ftp/${lua}.tar.gz
+    tar xvf ${lua}.tar.gz
+    rm ${lua}.tar.gz
+    cd ${lua}; make $arch; make install INSTALL_TOP=$(pwd); cd ..;
+fi
+
+if [ $(which lua) != ${luabin}/lua ]; then
+    echo "Adding local lua binary to path..."
+    export PATH=${luabin}:$PATH
+fi
+
+
+
+PATH=${PATH/${luabin}:/""} # Remove lua/bin from path if it exists
+
+export PATH=${luabin}:$PATH
+export LUA_CPATH=$(pwd)/src/?.so
+export LUA_HOME=$(pwd)/${lua}
+
+echo "*** run with 'source' to export these environment variables for build: ***"
+echo "PATH=${PATH}"
+echo "LUA_CPATH=${LUA_CPATH}"
+echo "LUA_HOME=${LUA_HOME}"

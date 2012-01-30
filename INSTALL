@@ -1,0 +1,26 @@
+_       _   _   _   _       _       ____     
+  |"|   U |"|u| | | \ |"|  U  /"\  uU |  _"\ u  
+U | | u  \| |\| |<|  \| |>  \/ _ \/  \| |_) |/  
+ \| |/__  | |_| |U| |\  |u  / ___ \   |  _ <    
+  |_____|<<\___/  |_| \_|  /_/   \_\  |_| \_\   
+  //  \\(__) )(   ||   \\,-.\\    >>  //   \\_  
+ (_")("_)   (__)  (_")  (_/(__)  (__)(__)  (__) 
+
+           Numeric arrays for Lua
+
+
+
+
+
+INSTALLTION INSTRUCTIONS
+
+(1) source setup
+(2) make
+
+
+
+RUNNING TESTS
+
+(1) make test
+(2) lua tests/array.lua
+

@@ -60,9 +60,9 @@ HEADERS = \
 
 default : $(LUNAR_SO) $(LUNAR_A)
 
-tests : $(LUNAR_SO) $(LUNAR_A)
+test : $(LUNAR_SO) $(LUNAR_A)
 
-all : default tests
+all : default test
 
 install : $(INSTALL_SO) $(INSTALL_A) $(HEADERS)
 
@@ -80,8 +80,8 @@ $(LUNAR_SO) : FORCE
 $(LUNAR_A) : FORCE
 	@make -C src $(LUNAR_A)
 
-tests : FORCE
-	@make -C tests
+test : FORCE
+	@make -C test
 
 $(INSTALL_SO) : $(LUNAR_SO)
 	mkdir -p $(INSTALL_TOP)/lib
@@ -92,7 +92,7 @@ $(INSTALL_A) : $(LUNAR_A)
 	cp $(LUNAR_A) $(INSTALL_TOP)/lib
 
 clean :
-	make -C tests clean
+	make -C test clean
 	make -C src clean
 	rm -rf lib include
 

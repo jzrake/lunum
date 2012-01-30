@@ -16,7 +16,7 @@ int main()
 
   lua_register(L, "upcast", upcast);
 
-  if (luaL_dofile(L, "tests/capi.lua")) {
+  if (luaL_dofile(L, "test/capi.lua")) {
     printf("%s\n", lua_tostring(L, -1));
   }
 
