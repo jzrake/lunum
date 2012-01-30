@@ -12,7 +12,7 @@ static int luaC_array_size(lua_State *L);
 static int luaC_array_astable(lua_State *L);
 static int luaC_array_astype(lua_State *L);
 
-
+#include "debug.c"
 void _lunar_register_array(lua_State *L, struct Array *B)
 {
   lua_newtable(L);
@@ -32,11 +32,16 @@ void _lunar_register_array(lua_State *L, struct Array *B)
   lua_pushcfunction(L, luaC_array_astype);
   lua_setfield(L, -2, "astype");
 
+
+  // Calls code written in Lua: lunar.__register_array(new_array) to add
+  // additional methods to the new array.
+  // ---------------------------------------------------------------------------
   lua_getglobal(L, "lunar");
-  lua_getfield(L, -1, "__array_methods");
-  lua_getfield(L, -1, "indices");
-  lua_setfield(L, -4, "indices");
-  lua_pop(L, 2);
+  lua_getfield(L, -1, "__register_array");
+  lua_pushvalue(L, -3);
+  lua_call(L, 1, 0);
+  lua_pop(L, 1);
+
 
   struct Array *A = (struct Array*) lua_newuserdata(L, sizeof(struct Array));
   *A = *B;

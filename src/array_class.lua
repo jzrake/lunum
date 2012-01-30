@@ -1,6 +1,29 @@
 
 
+local function copy(A)
+   -- --------------------------------------------------------------------------
+   -- Returns a deepcopy of the array 'A'.
+   -- --------------------------------------------------------------------------
+   local B = A:astype(A:dtype('enum'))
+   return B
+end
+
+local function reshape(A, newshape)
+   -- --------------------------------------------------------------------------
+   -- Returns a copy of 'A' with the shape 'newshape'. Similar to array:resize,
+   -- but does not change 'A'.
+   -- --------------------------------------------------------------------------
+   local B = A:copy()
+   B:resize(newshape)
+   return B
+end
+
 local function indices(A, kind)
+   -- --------------------------------------------------------------------------
+   -- Returns an iterator over all permutations of valid indices. If the
+   -- optional argument 'kind' is the string 'table', then returns a table
+   -- containing the indices instead of unpacking them.
+   -- --------------------------------------------------------------------------
    local N =  A:shape()
    local I = { }
 
@@ -36,6 +59,11 @@ local function indices(A, kind)
 end
 
 local function apply(f,...)
+   -- --------------------------------------------------------------------------
+   -- Returns the lunar array 'C', where C[i] = f(A[i], B[i], ...) for any
+   -- number of array input arguments. Arguments must all have the same
+   -- shape. The returned array has the highest data type of any of the inputs.
+   -- --------------------------------------------------------------------------
    local A  = {...}
    local T  = A[1]:dtype('enum')
    local s1 = A[1]:shape()
@@ -62,6 +90,15 @@ local function apply(f,...)
    return B
 end
 
-lunar.__array_methods = { }
-lunar.__array_methods.indices = indices
+local function __register(t)
+   t.copy = copy
+   t.reshape = reshape
+   t.indices = indices
+end
+
+
+-- -----------------------------------------------------------------------------
+-- Registering the functions with the lunar table.
+-- -----------------------------------------------------------------------------
+lunar.__register_array = __register
 lunar.apply = apply
