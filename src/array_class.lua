@@ -8,6 +8,14 @@ local function copy(A)
    return B
 end
 
+local function resize(A, newshape)
+   -- --------------------------------------------------------------------------
+   -- Resizes the array 'A' in-place to have the shape 'newshape'.
+   -- --------------------------------------------------------------------------
+   lunar.resize(A, newshape)
+   return B
+end
+
 local function reshape(A, newshape)
    -- --------------------------------------------------------------------------
    -- Returns a copy of 'A' with the shape 'newshape'. Similar to array:resize,
@@ -91,7 +99,8 @@ local function apply(f,...)
 end
 
 local function __register(t)
-   t.copy = copy
+   t.copy    = copy
+   t.resize  = resize
    t.reshape = reshape
    t.indices = indices
 end
