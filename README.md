@@ -111,6 +111,16 @@ flattened copy of the array.
 
 Returns the array, converted to 'type'.
 
+### array:min()
+***
+
+Returns the minimum value of the array.
+
+### array:max()
+***
+
+Returns the maximum value of the array.
+
 ### array:real()
 ***
 

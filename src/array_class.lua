@@ -9,6 +9,28 @@ local function copy(A)
    return B
 end
 
+local function min(A)
+   -- --------------------------------------------------------------------------
+   -- Returns the minimum value of the array 'A'.
+   -- --------------------------------------------------------------------------
+   local x = A[0]
+   for I in A:indices('table') do
+      if A[I] < x then x = A[I] end
+   end
+   return x
+end
+
+local function max(A)
+   -- --------------------------------------------------------------------------
+   -- Returns the maximum value of the array 'A'.
+   -- --------------------------------------------------------------------------
+   local x = A[0]
+   for I in A:indices('table') do
+      if A[I] > x then x = A[I] end
+   end
+   return x
+end
+
 local function conj(A)
    -- --------------------------------------------------------------------------
    -- Returns the complex conjugate of the array 'A'.
@@ -141,6 +163,8 @@ end
 -- -----------------------------------------------------------------------------
 local function __register(t)
    t.copy      = copy
+   t.min       = min
+   t.max       = max
    t.real      = real
    t.imag      = imag
    t.conj      = conj
