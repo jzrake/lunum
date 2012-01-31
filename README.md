@@ -111,6 +111,18 @@ flattened copy of the array.
 
 Returns the array, converted to 'type'.
 
+### array:real()
+***
+
+Returns the real part of an array. If it is not complex, then a simple
+copy of the array is returned.
+
+### array:imag()
+***
+
+Returns the imaginary part of an array. If it is not complex, then an
+array of zeros with the same shape and data type is returned.
+
 ### array:conj()
 ***
 

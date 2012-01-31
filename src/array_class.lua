@@ -16,6 +16,27 @@ local function conj(A)
    return lunar.conjugate(A)
 end
 
+local function real(A)
+   -- --------------------------------------------------------------------------
+   -- Returns the real part of the array 'A'.
+   -- --------------------------------------------------------------------------
+   if A:dtype('enum') ~= lunar.complex then return A:copy()
+   else
+      return A:astype(lunar.double)
+   end
+end
+
+local function imag(A)
+   -- --------------------------------------------------------------------------
+   -- Returns the imaginary part of the array 'A'.
+   -- --------------------------------------------------------------------------
+   if A:dtype('enum') ~= lunar.complex then
+      return lunar.zeros(A:shape(), A:dtype('enum'))
+   else
+      return (-lunar.I*A):astype(lunar.double)
+   end
+end
+
 local function resize(A, newshape)
    -- --------------------------------------------------------------------------
    -- Resizes the array 'A' in-place to have the shape 'newshape'.
@@ -120,6 +141,8 @@ end
 -- -----------------------------------------------------------------------------
 local function __register(t)
    t.copy      = copy
+   t.real      = real
+   t.imag      = imag
    t.conj      = conj
    t.resize    = resize
    t.setasflat = setasflat
