@@ -115,15 +115,16 @@ HEADERS = \
 default : $(LUNAR_SO) $(LUNAR_A)
 
 config : 
-	@echo "AR = $(AR)"
-	@echo "CC = $(CC)"
-	@echo "CXX = $(CXX)"
-	@echo "FPIC = $(FPIC)"
-	@echo "WARN = $(WARN)"
-	@echo "OPTIM = $(OPTIM)"
-	@echo "DEBUG = $(DEBUG)"
-	@echo "LUA_HOME = $(LUA_HOME)"
-	@echo "INSTALL_TOP = $(INSTALL_TOP)"
+	@echo "CC           = $(CC)"
+	@echo "CXX          = $(CXX)"
+	@echo "FPIC         = $(FPIC)"
+	@echo "WARN         = $(WARN)"
+	@echo "OPTIM        = $(OPTIM)"
+	@echo "DEBUG        = $(DEBUG)"
+	@echo "AR           = $(AR)"
+	@echo "SO           = $(SO)"
+	@echo "LUA_HOME     = $(LUA_HOME)"
+	@echo "INSTALL_TOP  = $(INSTALL_TOP)"
 
 test : $(LUNAR_SO) $(LUNAR_A)
 

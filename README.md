@@ -1,74 +1,66 @@
-_       _   _   _   _       _       ____     
-  |"|   U |"|u| | | \ |"|  U  /"\  uU |  _"\ u  
-U | | u  \| |\| |<|  \| |>  \/ _ \/  \| |_) |/  
- \| |/__  | |_| |U| |\  |u  / ___ \   |  _ <    
-  |_____|<<\___/  |_| \_|  /_/   \_\  |_| \_\   
-  //  \\(__) )(   ||   \\,-.\\    >>  //   \\_  
- (_")("_)   (__)  (_")  (_/(__)  (__)(__)  (__) 
-
-           Numeric arrays for Lua
 
 
 
-# INTRODUCTION
+# Introduction
 
-Lunar ('lua' + 'array') is a numeric extension for the Lua
-programming language. Its purpose is to provide numeric
-arrays to Lua which behave just like numpy arrays, and are
-just as fast (if not faster). It may be loaded as a Lua
-module through a shared object file, or linked statically to
-embed in an application.
+Lunar ('lua' + 'array') is a numeric extension for the Lua programming
+language. Its goals are to provide flexible and robust facilities for
+the manipulation of multi-dimensional numeric arrays, using a syntax
+and style that feels native to Lua, but also *guessable* to Numpy
+users. All of the hard work is done in C, making it prefectly
+acceptable for use in scientific software development.
 
-Lunar's goals are to provide flexible and robust facilities
-for the manipulation of multi-dimensional numeric arrays. It
-is not intended to be a linear algebra or other scientific
-computing library, but rather a direct extension to the
-basic Lua language to include arrays that feel 'native' to
-Lua. Thus it is more slender than the 'numlua' project. It
-also differs from numlua in that it has no dependencies, and
-features a portable and automatic build sequence.
+Consistent with the Lua philosophy, Lunar is easy to embed in C
+applications. This means that C applications may readily embed the Lua
+interpereter along with the Lunar API, rather than relying on building
+shared modules as in Python. This has important consequences,
+especially for distributed memory parallel computing where the
+embedding application may be using MPI. Thus far, there is no way of
+(simply) accomplishing this with Python and Numpy.
 
-
-
-# FEATURES
-
-* Arrays of arbitrary dimension are supported, however there
-  is no support for slicing operations at this time.
-
-* Vectorized arithmetic operations are fully supported, and
-  are carried out entirely in C. These include addition,
-  subtraction, multiplication, division, and exponentiation
-  (through '^'). Mixed operations on scalar and array
-  quantities work as expected. C casting rules are applied
-  to binary operations between mixed array types.
-
-* The C math library is exposed and overloaded through
-  lunar. For example, lunar.asinh operates correctly on all
-  lunar data types. Integral arrays are upcast to double
-  precision, and complex arrays use the C complex math
-  functions.
-
-* Lunar provides 7 atomic data types: char, short, int,
-  long, float, double, and complex. Complex values are all
-  double precision, and are built by adding the imaginary
-  unit to a number, e.g. z = 1 + 2*lunar.I is the complex
-  number (1,2).
+At this time, Lunar does not offer a linear algebra or FFT
+package. When these things are implemented, they will be built
+optionally so as not to add unnecessary bulk or build dependencies to
+the code.
 
 
 
-# CONVENTIONS
+# Conventions
 
-Unlike Lua tables with numeric keys, lunar arrays start from
-index 0. This is to be consistent with C, Python, and
-numpy. The Luar C API provides functions for pushing new
-lunar arrays onto the stack, and obtaining them from the
-stack.
+Unlike Lua tables with numeric keys, lunar arrays start from index
+0. This is to in order to be consistent with C, Python, and numpy. The
+Luar C API provides functions for pushing new lunar arrays onto the
+stack, and obtaining them from the stack.
+
+
+
+# Features
+
+* Arrays of arbitrary dimension are supported, however there is no
+  support for slicing operations at this time.
+
+* Vectorized arithmetic operations are fully supported, and are
+  carried out entirely in C. These include addition, subtraction,
+  multiplication, division, and exponentiation (through '^'). Mixed
+  operations on scalar and array quantities work as expected. C
+  casting rules are applied to binary operations between mixed array
+  types.
+
+* The C math library is exposed and overloaded through lunar. For
+  example, lunar.asinh operates correctly on all lunar data
+  types. Integral arrays are upcast to double precision, and complex
+  arrays use the C complex math functions.
+
+* Lunar provides 7 atomic data types: char, short, int, long, float,
+  double, and complex. Complex values are all double precision, and
+  are built by adding the imaginary unit to a number, e.g. z = 1 +
+  2*lunar.I is the complex number (1,2).
 
 
 
 # Lunar API Documentation
 
-# Array element access
+## Array element access
 
 Data elements in an array may be accessed as an assignable (l-value)
 by using square brackets. If the index is a number, then it is
@@ -80,13 +72,13 @@ table must have the same length as the array's dimension.
     local A = lunar.zeros({10,10,3})
     A[{9,9,2}] = 3.141592653589
     print(A[{9,9,2}]) -- > '3.141592653589'
-    print(A(9,9,2)) -- > '3.141592653589', calling syntax short-hand for r-value access
+    print(A(9,9,2)) -- > '3.141592653589', short-hand for r-value access
 
 Slicing operations are not supported at this time, but may be added
 in the future.
 
 
-# Array member functions
+## Array member functions
 
 ### array:dtype([kind])
 ***
@@ -116,6 +108,7 @@ flattened copy of the array.
 
 ### array:astype(type)
 ***
+
 Returns the array, converted to 'type'.
 
 ### array:conj()
@@ -165,7 +158,7 @@ containing the indices instead of unpacking them. For example:
 
 
 
-# Lunar functions
+## Lunar functions
 
 ### lunar.array(tab, [dtype]) *** Returns a new array from the table
 `tab` of type `dtype`. Default is double precision.
