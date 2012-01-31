@@ -77,12 +77,13 @@ void lunar_astable(lua_State *L, int pos)
     lua_pushnumber(L, i+1);
 
     switch (A->dtype) {
-    case ARRAY_TYPE_CHAR    : lua_pushnumber(L, ((char    *)a)[i]); break;
-    case ARRAY_TYPE_SHORT   : lua_pushnumber(L, ((short   *)a)[i]); break;
-    case ARRAY_TYPE_INT     : lua_pushnumber(L, ((int     *)a)[i]); break;
-    case ARRAY_TYPE_LONG    : lua_pushnumber(L, ((long    *)a)[i]); break;
-    case ARRAY_TYPE_FLOAT   : lua_pushnumber(L, ((float   *)a)[i]); break;
-    case ARRAY_TYPE_DOUBLE  : lua_pushnumber(L, ((double  *)a)[i]); break;
+    case ARRAY_TYPE_BOOL    : lua_pushboolean  (L, ((Bool    *)a)[i]); break;
+    case ARRAY_TYPE_CHAR    : lua_pushnumber   (L, ((char    *)a)[i]); break;
+    case ARRAY_TYPE_SHORT   : lua_pushnumber   (L, ((short   *)a)[i]); break;
+    case ARRAY_TYPE_INT     : lua_pushnumber   (L, ((int     *)a)[i]); break;
+    case ARRAY_TYPE_LONG    : lua_pushnumber   (L, ((long    *)a)[i]); break;
+    case ARRAY_TYPE_FLOAT   : lua_pushnumber   (L, ((float   *)a)[i]); break;
+    case ARRAY_TYPE_DOUBLE  : lua_pushnumber   (L, ((double  *)a)[i]); break;
     case ARRAY_TYPE_COMPLEX : lunar_pushcomplex(L, ((Complex *)a)[i]); break;
     }
 
@@ -156,6 +157,16 @@ int lunar_upcast(lua_State *L, int pos, enum ArrayType T, int N)
     return 1;
   }
 
+  // Deal with Lua bool
+  // ---------------------------------------------------------------------------
+  else if (lua_isboolean(L, pos)) {
+    const Bool x = lua_toboolean(L, pos);
+    struct Array A = array_new_zeros(N, ARRAY_TYPE_BOOL);
+    array_assign_from_scalar(&A, &x);
+    lunar_pusharray1(L, &A);
+    return 1;
+  }
+
   // Deal with Lua numbers
   // ---------------------------------------------------------------------------
   else if (lua_isnumber(L, pos)) {
@@ -201,18 +212,25 @@ int lunar_hasmetatable(lua_State *L, int pos, const char *name)
 
 void *lunar_tovalue(lua_State *L, enum ArrayType T)
 {
-  Complex x;
+  Complex x=0.0;
 
   if (lua_isnumber(L, -1)) {
     x = lua_tonumber(L, -1);
   }
+  else if (lua_isboolean(L, -1)) {
+    x = lua_toboolean(L, -1);
+  }
+  else if (lunar_hasmetatable(L, -1, "complex")) {
+    x = *((Complex*) lua_touserdata(L, -1));
+  }
   else {
-    x = *((Complex*) luaL_checkudata(L, -1, "complex"));
+    luaL_error(L, "unkown data type");
   }
 
   void *y = malloc(array_sizeof(T));
 
   switch (T) {
+  case ARRAY_TYPE_BOOL    : *((Bool   *)y) = x; break;
   case ARRAY_TYPE_CHAR    : *((char   *)y) = x; break;
   case ARRAY_TYPE_SHORT   : *((short  *)y) = x; break;
   case ARRAY_TYPE_INT     : *((int    *)y) = x; break;

@@ -6,8 +6,8 @@
 #include <complex.h>
 #include "numarray.h"
 
+typedef unsigned char Bool;
 typedef double complex Complex;
-
 
 #define EXPR_ADD(T) {for(int i=0;i<N;++i)((T*)c)[i]=((T*)a)[i]+((T*)b)[i];}
 #define EXPR_SUB(T) {for(int i=0;i<N;++i)((T*)c)[i]=((T*)a)[i]-((T*)b)[i];}
@@ -25,6 +25,7 @@ typedef double complex Complex;
 char *array_typename(enum ArrayType T)
 {
   switch (T) {
+  case ARRAY_TYPE_BOOL    : return "bool";
   case ARRAY_TYPE_CHAR    : return "char";
   case ARRAY_TYPE_SHORT   : return "short";
   case ARRAY_TYPE_INT     : return "int";
@@ -32,8 +33,8 @@ char *array_typename(enum ArrayType T)
   case ARRAY_TYPE_FLOAT   : return "float";
   case ARRAY_TYPE_DOUBLE  : return "double";
   case ARRAY_TYPE_COMPLEX : return "complex";
-  default: return "unknown array type";
   }
+  return "unknown array type";
 }
 
 struct Array array_new_zeros(int N, enum ArrayType T)
@@ -49,6 +50,7 @@ struct Array array_new_zeros(int N, enum ArrayType T)
   void *a = A.data;
 
   switch (T) {
+  case ARRAY_TYPE_BOOL    : EXPR_ASSIGN0(Bool   ,0) ; break;
   case ARRAY_TYPE_CHAR    : EXPR_ASSIGN0(char   ,0) ; break;
   case ARRAY_TYPE_SHORT   : EXPR_ASSIGN0(short  ,0) ; break;
   case ARRAY_TYPE_INT     : EXPR_ASSIGN0(int    ,0) ; break;
@@ -106,6 +108,7 @@ void array_binary_op(const struct Array *A, const struct Array *B,
   switch (op) {
   case ARRAY_OP_ADD:
     switch (A->dtype) {
+    case ARRAY_TYPE_BOOL    : EXPR_ADD(Bool   ) ; break;
     case ARRAY_TYPE_CHAR    : EXPR_ADD(char   ) ; break;
     case ARRAY_TYPE_SHORT   : EXPR_ADD(short  ) ; break;
     case ARRAY_TYPE_INT     : EXPR_ADD(int    ) ; break;
@@ -117,6 +120,7 @@ void array_binary_op(const struct Array *A, const struct Array *B,
     break;
   case ARRAY_OP_SUB:
     switch (A->dtype) {
+    case ARRAY_TYPE_BOOL    : EXPR_SUB(Bool   ) ; break;
     case ARRAY_TYPE_CHAR    : EXPR_SUB(char   ) ; break;
     case ARRAY_TYPE_SHORT   : EXPR_SUB(short  ) ; break;
     case ARRAY_TYPE_INT     : EXPR_SUB(int    ) ; break;
@@ -128,6 +132,7 @@ void array_binary_op(const struct Array *A, const struct Array *B,
     break;
   case ARRAY_OP_MUL:
     switch (A->dtype) {
+    case ARRAY_TYPE_BOOL    : EXPR_MUL(Bool   ) ; break;
     case ARRAY_TYPE_CHAR    : EXPR_MUL(char   ) ; break;
     case ARRAY_TYPE_SHORT   : EXPR_MUL(short  ) ; break;
     case ARRAY_TYPE_INT     : EXPR_MUL(int    ) ; break;
@@ -139,6 +144,7 @@ void array_binary_op(const struct Array *A, const struct Array *B,
     break;
   case ARRAY_OP_DIV:
     switch (A->dtype) {
+    case ARRAY_TYPE_BOOL    : EXPR_DIV(Bool   ) ; break;
     case ARRAY_TYPE_CHAR    : EXPR_DIV(char   ) ; break;
     case ARRAY_TYPE_SHORT   : EXPR_DIV(short  ) ; break;
     case ARRAY_TYPE_INT     : EXPR_DIV(int    ) ; break;
@@ -150,6 +156,7 @@ void array_binary_op(const struct Array *A, const struct Array *B,
     break;
   case ARRAY_OP_POW:
     switch (A->dtype) {
+    case ARRAY_TYPE_BOOL    : EXPR_POW(Bool   ) ; break;
     case ARRAY_TYPE_CHAR    : EXPR_POW(char   ) ; break;
     case ARRAY_TYPE_SHORT   : EXPR_POW(short  ) ; break;
     case ARRAY_TYPE_INT     : EXPR_POW(int    ) ; break;
@@ -165,6 +172,7 @@ void array_binary_op(const struct Array *A, const struct Array *B,
 int array_sizeof(enum ArrayType T)
 {
   switch (T) {
+  case ARRAY_TYPE_BOOL    : return sizeof(Bool);
   case ARRAY_TYPE_CHAR    : return sizeof(char);
   case ARRAY_TYPE_SHORT   : return sizeof(short);
   case ARRAY_TYPE_INT     : return sizeof(int);
@@ -172,8 +180,8 @@ int array_sizeof(enum ArrayType T)
   case ARRAY_TYPE_FLOAT   : return sizeof(float);
   case ARRAY_TYPE_DOUBLE  : return sizeof(double);
   case ARRAY_TYPE_COMPLEX : return sizeof(Complex);
-  default: return 0;
   }
+  return sizeof(int);
 }
 
 void array_assign_from_scalar(struct Array *A, const void *val)
@@ -182,6 +190,7 @@ void array_assign_from_scalar(struct Array *A, const void *val)
   void     *a = A->data;
 
   switch (A->dtype) {
+  case ARRAY_TYPE_BOOL    : EXPR_ASSIGN1(Bool   , val) ; break;
   case ARRAY_TYPE_CHAR    : EXPR_ASSIGN1(char   , val) ; break;
   case ARRAY_TYPE_SHORT   : EXPR_ASSIGN1(short  , val) ; break;
   case ARRAY_TYPE_INT     : EXPR_ASSIGN1(int    , val) ; break;
@@ -199,9 +208,23 @@ void array_assign_from_array(struct Array *A, const struct Array *B)
   const int    N = B->size;
 
   switch (A->dtype) {
-  case ARRAY_TYPE_CHAR:
+  case ARRAY_TYPE_BOOL:
     switch (B->dtype) {
       //                               (A->type, B->type)
+    case ARRAY_TYPE_BOOL    : EXPR_ASSIGN2(Bool, Bool)    ; break;
+    case ARRAY_TYPE_CHAR    : EXPR_ASSIGN2(Bool, char)    ; break;
+    case ARRAY_TYPE_SHORT   : EXPR_ASSIGN2(Bool, short)   ; break;
+    case ARRAY_TYPE_INT     : EXPR_ASSIGN2(Bool, int)     ; break;
+    case ARRAY_TYPE_LONG    : EXPR_ASSIGN2(Bool, long)    ; break;
+    case ARRAY_TYPE_FLOAT   : EXPR_ASSIGN2(Bool, float)   ; break;
+    case ARRAY_TYPE_DOUBLE  : EXPR_ASSIGN2(Bool, double)  ; break;
+    case ARRAY_TYPE_COMPLEX : EXPR_ASSIGN2(Bool, Complex) ; break;
+    }
+    break;
+
+  case ARRAY_TYPE_CHAR:
+    switch (B->dtype) {
+    case ARRAY_TYPE_BOOL    : EXPR_ASSIGN2(char, Bool)    ; break;
     case ARRAY_TYPE_CHAR    : EXPR_ASSIGN2(char, char)    ; break;
     case ARRAY_TYPE_SHORT   : EXPR_ASSIGN2(char, short)   ; break;
     case ARRAY_TYPE_INT     : EXPR_ASSIGN2(char, int)     ; break;
@@ -214,6 +237,7 @@ void array_assign_from_array(struct Array *A, const struct Array *B)
 
   case ARRAY_TYPE_SHORT:
     switch (B->dtype) {
+    case ARRAY_TYPE_BOOL    : EXPR_ASSIGN2(short, Bool)    ; break;
     case ARRAY_TYPE_CHAR    : EXPR_ASSIGN2(short, char)    ; break;
     case ARRAY_TYPE_SHORT   : EXPR_ASSIGN2(short, short)   ; break;
     case ARRAY_TYPE_INT     : EXPR_ASSIGN2(short, int)     ; break;
@@ -226,6 +250,7 @@ void array_assign_from_array(struct Array *A, const struct Array *B)
 
   case ARRAY_TYPE_INT:
     switch (B->dtype) {
+    case ARRAY_TYPE_BOOL    : EXPR_ASSIGN2(int, Bool)    ; break;
     case ARRAY_TYPE_CHAR    : EXPR_ASSIGN2(int, char)    ; break;
     case ARRAY_TYPE_SHORT   : EXPR_ASSIGN2(int, short)   ; break;
     case ARRAY_TYPE_INT     : EXPR_ASSIGN2(int, int)     ; break;
@@ -238,6 +263,7 @@ void array_assign_from_array(struct Array *A, const struct Array *B)
 
   case ARRAY_TYPE_LONG:
     switch (B->dtype) {
+    case ARRAY_TYPE_BOOL    : EXPR_ASSIGN2(long, Bool)    ; break;
     case ARRAY_TYPE_CHAR    : EXPR_ASSIGN2(long, char)    ; break;
     case ARRAY_TYPE_SHORT   : EXPR_ASSIGN2(long, short)   ; break;
     case ARRAY_TYPE_INT     : EXPR_ASSIGN2(long, int)     ; break;
@@ -250,6 +276,7 @@ void array_assign_from_array(struct Array *A, const struct Array *B)
 
   case ARRAY_TYPE_FLOAT:
     switch (B->dtype) {
+    case ARRAY_TYPE_BOOL    : EXPR_ASSIGN2(float, Bool)    ; break;
     case ARRAY_TYPE_CHAR    : EXPR_ASSIGN2(float, char)    ; break;
     case ARRAY_TYPE_SHORT   : EXPR_ASSIGN2(float, short)   ; break;
     case ARRAY_TYPE_INT     : EXPR_ASSIGN2(float, int)     ; break;
@@ -262,6 +289,7 @@ void array_assign_from_array(struct Array *A, const struct Array *B)
 
   case ARRAY_TYPE_DOUBLE:
     switch (B->dtype) {
+    case ARRAY_TYPE_BOOL    : EXPR_ASSIGN2(double, Bool)    ; break;
     case ARRAY_TYPE_CHAR    : EXPR_ASSIGN2(double, char)    ; break;
     case ARRAY_TYPE_SHORT   : EXPR_ASSIGN2(double, short)   ; break;
     case ARRAY_TYPE_INT     : EXPR_ASSIGN2(double, int)     ; break;
@@ -274,6 +302,7 @@ void array_assign_from_array(struct Array *A, const struct Array *B)
 
   case ARRAY_TYPE_COMPLEX:
     switch (B->dtype) {
+    case ARRAY_TYPE_BOOL    : EXPR_ASSIGN2(Complex, Bool)    ; break;
     case ARRAY_TYPE_CHAR    : EXPR_ASSIGN2(Complex, char)    ; break;
     case ARRAY_TYPE_SHORT   : EXPR_ASSIGN2(Complex, short)   ; break;
     case ARRAY_TYPE_INT     : EXPR_ASSIGN2(Complex, int)     ; break;

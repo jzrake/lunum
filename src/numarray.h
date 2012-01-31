@@ -4,6 +4,7 @@
 #define __Array_HEADER__
 
 enum ArrayType {
+  ARRAY_TYPE_BOOL,
   ARRAY_TYPE_CHAR,
   ARRAY_TYPE_SHORT,
   ARRAY_TYPE_INT,

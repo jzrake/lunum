@@ -174,6 +174,7 @@ int luaopen_lunar(lua_State *L)
   LUA_NEW_MODULEMETHOD(L, lunar, conjugate);
 
 
+  LUA_NEW_MODULEDATA(L, ARRAY_TYPE_BOOL   , bool);
   LUA_NEW_MODULEDATA(L, ARRAY_TYPE_CHAR   , char);
   LUA_NEW_MODULEDATA(L, ARRAY_TYPE_SHORT  , short);
   LUA_NEW_MODULEDATA(L, ARRAY_TYPE_INT    , int);
@@ -219,6 +220,7 @@ int luaC_array__tostring(lua_State *L)
     char s[64];
 
     switch (A->dtype) {
+    case ARRAY_TYPE_BOOL    : sprintf(s, "%s" , ((Bool*)A->data)[n]?"true":"false"); break;
     case ARRAY_TYPE_CHAR    : sprintf(s, "%d" , ((char   *)A->data)[n]); break;
     case ARRAY_TYPE_SHORT   : sprintf(s, "%d" , ((short  *)A->data)[n]); break;
     case ARRAY_TYPE_INT     : sprintf(s, "%d" , ((int    *)A->data)[n]); break;
@@ -280,19 +282,21 @@ int luaC_array__call(lua_State *L)
 
   return 1;
 }
+
 int luaC_array__index(lua_State *L)
 {
   struct Array *A = lunar_checkarray1(L, 1);
   const int m = _get_index(L, A);
 
   switch (A->dtype) {
-  case ARRAY_TYPE_CHAR    : lua_pushnumber(L,    ((char   *)A->data)[m]); break;
-  case ARRAY_TYPE_SHORT   : lua_pushnumber(L,    ((short  *)A->data)[m]); break;
-  case ARRAY_TYPE_INT     : lua_pushnumber(L,    ((int    *)A->data)[m]); break;
-  case ARRAY_TYPE_LONG    : lua_pushnumber(L,    ((long   *)A->data)[m]); break;
-  case ARRAY_TYPE_FLOAT   : lua_pushnumber(L,    ((float  *)A->data)[m]); break;
-  case ARRAY_TYPE_DOUBLE  : lua_pushnumber(L,    ((double *)A->data)[m]); break;
-  case ARRAY_TYPE_COMPLEX : lunar_pushcomplex(L, ((Complex*)A->data)[m]); break;
+  case ARRAY_TYPE_BOOL    : lua_pushboolean(L,    ((Bool   *)A->data)[m]); break;
+  case ARRAY_TYPE_CHAR    : lua_pushnumber (L,    ((char   *)A->data)[m]); break;
+  case ARRAY_TYPE_SHORT   : lua_pushnumber (L,    ((short  *)A->data)[m]); break;
+  case ARRAY_TYPE_INT     : lua_pushnumber (L,    ((int    *)A->data)[m]); break;
+  case ARRAY_TYPE_LONG    : lua_pushnumber (L,    ((long   *)A->data)[m]); break;
+  case ARRAY_TYPE_FLOAT   : lua_pushnumber (L,    ((float  *)A->data)[m]); break;
+  case ARRAY_TYPE_DOUBLE  : lua_pushnumber (L,    ((double *)A->data)[m]); break;
+  case ARRAY_TYPE_COMPLEX : lunar_pushcomplex (L, ((Complex*)A->data)[m]); break;
   }
 
   return 1;
@@ -544,6 +548,7 @@ void _unary_func(lua_State *L, double(*f)(double), Complex(*g)(Complex), int cas
       struct Array B = array_new_copy(A, A->dtype);
 
       switch (B.dtype) {
+      case ARRAY_TYPE_BOOL    : EXPR_EVALF(Bool   , B.size, B.data); break;
       case ARRAY_TYPE_CHAR    : EXPR_EVALF(char   , B.size, B.data); break;
       case ARRAY_TYPE_SHORT   : EXPR_EVALF(short  , B.size, B.data); break;
       case ARRAY_TYPE_INT     : EXPR_EVALF(long   , B.size, B.data); break;

@@ -26,4 +26,4 @@ array_class.lc : array_class.lua
 	$(LUA) bin2c.lua +$< > $@
 
 clean :
-	rm -f *.o $(LUNAR_A) $(LUNAR_SO) array_class.lc
+	rm -f *.o $(LUNAR_A) $(LUNAR_SO) *.lc

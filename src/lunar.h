@@ -6,6 +6,7 @@
 #include "numarray.h"
 #include "lualib.h"
 
+typedef      unsigned char Bool;
 int luaopen_lunar(lua_State *L);
 
 struct Array *lunar_checkarray1(lua_State *L, int pos);

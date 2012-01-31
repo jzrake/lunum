@@ -117,6 +117,9 @@ end
 
 
 local function test11()
+   local C = lunar.array({0,1,true,false}, lunar.bool)
+   print("{0,1,true,false} = ", C)
+
    local A = lunar.array({1,2,3})
    local B = lunar.array({3,2,1})
    print("A = ", A, "B = ", B)
