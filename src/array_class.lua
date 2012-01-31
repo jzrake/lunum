@@ -1,5 +1,22 @@
 
 
+-- *****************************************************************************
+-- Local utility function, never exported
+-- *****************************************************************************
+local function check_shapes_agree(A, B)
+   local go = true
+   local As = A:shape()
+   local Bs = B:shape()
+
+   if #As ~= #Bs then go = false end
+   for d=1,#As do
+      if As[d] ~= Bs[d] then go = false end
+   end
+   if not go then
+      error('arguments of incompatible shapes.')
+   end
+end
+
 
 local function copy(A)
    -- --------------------------------------------------------------------------
@@ -124,6 +141,49 @@ local function indices(A, kind)
    end
 end
 
+local function eq(A, B)
+   check_shapes_agree(A, B)
+   local C = lunar.zeros(A:shape(), lunar.char)
+   for I in A:indices('table') do if A[I]==B[I] then C[I]=1 else C[I]=0 end end
+   return C
+end
+
+local function ne(A, B)
+   check_shapes_agree(A, B)
+   local C = lunar.zeros(A:shape(), lunar.char)
+   for I in A:indices('table') do if A[I]~=B[I] then C[I]=1 else C[I]=0 end end
+   return C
+end
+
+local function lt(A, B)
+   check_shapes_agree(A, B)
+   local C = lunar.zeros(A:shape(), lunar.char)
+   for I in A:indices('table') do if A[I]< B[I] then C[I]=1 else C[I]=0 end end
+   return C
+end
+
+local function le(A, B)
+   check_shapes_agree(A, B)
+   local C = lunar.zeros(A:shape(), lunar.char)
+   for I in A:indices('table') do if A[I]<=B[I] then C[I]=1 else C[I]=0 end end
+   return C
+end
+
+local function gt(A, B)
+   check_shapes_agree(A, B)
+   local C = lunar.zeros(A:shape(), lunar.char)
+   for I in A:indices('table') do if A[I]> B[I] then C[I]=1 else C[I]=0 end end
+   return C
+end
+
+local function ge(A, B)
+   check_shapes_agree(A, B)
+   local C = lunar.zeros(A:shape(), lunar.char)
+   for I in A:indices('table') do if A[I]>=B[I] then C[I]=1 else C[I]=0 end end
+   return C
+end
+
+
 local function apply(f,...)
    -- --------------------------------------------------------------------------
    -- Returns the lunar array 'C', where C[i] = f(A[i], B[i], ...) for any
@@ -172,6 +232,12 @@ local function __register(t)
    t.setasflat = setasflat
    t.reshape   = reshape
    t.indices   = indices
+   t.eq        = eq
+   t.ne        = ne
+   t.lt        = lt
+   t.le        = le
+   t.gt        = gt
+   t.ge        = ge
 end
 
 

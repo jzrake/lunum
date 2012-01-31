@@ -116,6 +116,17 @@ local function test10()
 end
 
 
+local function test11()
+   local A = lunar.array({1,2,3})
+   local B = lunar.array({3,2,1})
+   print("A = ", A, "B = ", B)
+   print("A == A ? ", A:eq(B))
+   print("A ~= A ? ", A:ne(B))
+   print("A <  A ? ", A:lt(B))
+   print("A <= A ? ", A:le(B))
+   print("A >  A ? ", A:gt(B))
+   print("A >= A ? ", A:ge(B))
+end
 
 
 test1()
@@ -129,3 +140,6 @@ test7()
 test8()
 test9()
 test10()
+
+
+test11()
