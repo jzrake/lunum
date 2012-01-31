@@ -59,6 +59,8 @@ static int luaC_lunar_atanh(lua_State *L);
 static int luaC_lunar_exp(lua_State *L);
 static int luaC_lunar_log(lua_State *L);
 static int luaC_lunar_log10(lua_State *L);
+static int luaC_lunar_conjugate(lua_State *L);
+
 
 
 static int luaC_array__tostring(lua_State *L);
@@ -70,6 +72,7 @@ static int luaC_array__sub(lua_State *L);
 static int luaC_array__mul(lua_State *L);
 static int luaC_array__div(lua_State *L);
 static int luaC_array__pow(lua_State *L);
+static int luaC_array__unm(lua_State *L);
 static int luaC_array__gc(lua_State *L);
 
 
@@ -79,6 +82,7 @@ static int luaC_complex__sub(lua_State *L);
 static int luaC_complex__mul(lua_State *L);
 static int luaC_complex__div(lua_State *L);
 static int luaC_complex__pow(lua_State *L);
+static int luaC_complex__unm(lua_State *L);
 
 
 static int   _array_binary_op1(lua_State *L, enum ArrayOperation op);
@@ -87,10 +91,20 @@ static int   _array_binary_op2(lua_State *L, enum ArrayOperation op);
 static int _complex_binary_op1(lua_State *L, enum ArrayOperation op);
 static int _complex_binary_op2(lua_State *L, enum ArrayOperation op);
 
-static void _unary_func(lua_State *L, double(*f)(double), Complex(*g)(Complex));
+static void _unary_func(lua_State *L, double(*f)(double), Complex(*g)(Complex),
+			int cast);
 static int _get_index(lua_State *L, struct Array *A);
 
 static Complex ImaginaryUnit = I;
+
+
+// Functions used by unary predicates
+// -----------------------------------------------------------------------------
+static double rconj(double x) { return x; }   // conj, but for real argument
+static double runm(double x) { return -x; }   // unary minus, real
+static Complex cunm(Complex z) { return -z; } // unary minus, complex
+// -----------------------------------------------------------------------------
+
 
 
 
@@ -111,6 +125,7 @@ int luaopen_lunar(lua_State *L)
   LUA_NEW_METAMETHOD(L, array, mul);
   LUA_NEW_METAMETHOD(L, array, div);
   LUA_NEW_METAMETHOD(L, array, pow);
+  LUA_NEW_METAMETHOD(L, array, unm);
   LUA_NEW_METAMETHOD(L, array, gc);
   lua_pop(L, 1);
 
@@ -124,6 +139,7 @@ int luaopen_lunar(lua_State *L)
   LUA_NEW_METAMETHOD(L, complex, mul);
   LUA_NEW_METAMETHOD(L, complex, div);
   LUA_NEW_METAMETHOD(L, complex, pow);
+  LUA_NEW_METAMETHOD(L, complex, unm);
   lua_pop(L, 1);
 
 
@@ -154,6 +170,9 @@ int luaopen_lunar(lua_State *L)
   LUA_NEW_MODULEMETHOD(L, lunar, exp);
   LUA_NEW_MODULEMETHOD(L, lunar, log);
   LUA_NEW_MODULEMETHOD(L, lunar, log10);
+
+  LUA_NEW_MODULEMETHOD(L, lunar, conjugate);
+
 
   LUA_NEW_MODULEDATA(L, ARRAY_TYPE_CHAR   , char);
   LUA_NEW_MODULEDATA(L, ARRAY_TYPE_SHORT  , short);
@@ -299,6 +318,7 @@ int luaC_array__sub(lua_State *L) { return _array_binary_op1(L, ARRAY_OP_SUB); }
 int luaC_array__mul(lua_State *L) { return _array_binary_op1(L, ARRAY_OP_MUL); }
 int luaC_array__div(lua_State *L) { return _array_binary_op1(L, ARRAY_OP_DIV); }
 int luaC_array__pow(lua_State *L) { return _array_binary_op1(L, ARRAY_OP_POW); }
+int luaC_array__unm(lua_State *L) { _unary_func(L, runm, cunm, 0); return 1; }
 
 
 int _array_binary_op1(lua_State *L, enum ArrayOperation op)
@@ -347,7 +367,6 @@ int _array_binary_op2(lua_State *L, enum ArrayOperation op)
 
 
 
-
 // *****************************************************************************
 // Implementation of lunar.complex metatable
 //
@@ -364,6 +383,7 @@ int luaC_complex__sub(lua_State *L) { return _complex_binary_op1(L, ARRAY_OP_SUB
 int luaC_complex__mul(lua_State *L) { return _complex_binary_op1(L, ARRAY_OP_MUL); }
 int luaC_complex__div(lua_State *L) { return _complex_binary_op1(L, ARRAY_OP_DIV); }
 int luaC_complex__pow(lua_State *L) { return _complex_binary_op1(L, ARRAY_OP_POW); }
+int luaC_complex__unm(lua_State *L) { _unary_func(L, runm, cunm, 0); return 1; }
 
 
 int _complex_binary_op1(lua_State *L, enum ArrayOperation op)
@@ -478,30 +498,31 @@ int luaC_lunar_resize(lua_State *L)
 
 
 
+int luaC_lunar_sin(lua_State *L) { _unary_func(L, sin, csin, 1); return 1; }
+int luaC_lunar_cos(lua_State *L) { _unary_func(L, cos, ccos, 1); return 1; }
+int luaC_lunar_tan(lua_State *L) { _unary_func(L, tan, ctan, 1); return 1; }
 
+int luaC_lunar_asin(lua_State *L) { _unary_func(L, asin, casin, 1); return 1; }
+int luaC_lunar_acos(lua_State *L) { _unary_func(L, acos, cacos, 1); return 1; }
+int luaC_lunar_atan(lua_State *L) { _unary_func(L, atan, catan, 1); return 1; }
 
-int luaC_lunar_sin(lua_State *L) { _unary_func(L, sin, csin); return 1; }
-int luaC_lunar_cos(lua_State *L) { _unary_func(L, cos, ccos); return 1; }
-int luaC_lunar_tan(lua_State *L) { _unary_func(L, tan, ctan); return 1; }
+int luaC_lunar_sinh(lua_State *L) { _unary_func(L, sinh, csinh, 1); return 1; }
+int luaC_lunar_cosh(lua_State *L) { _unary_func(L, cosh, ccosh, 1); return 1; }
+int luaC_lunar_tanh(lua_State *L) { _unary_func(L, tanh, ctanh, 1); return 1; }
 
-int luaC_lunar_asin(lua_State *L) { _unary_func(L, asin, casin); return 1; }
-int luaC_lunar_acos(lua_State *L) { _unary_func(L, acos, cacos); return 1; }
-int luaC_lunar_atan(lua_State *L) { _unary_func(L, atan, catan); return 1; }
+int luaC_lunar_asinh(lua_State *L) { _unary_func(L, asinh, casinh, 1); return 1; }
+int luaC_lunar_acosh(lua_State *L) { _unary_func(L, acosh, cacosh, 1); return 1; }
+int luaC_lunar_atanh(lua_State *L) { _unary_func(L, atanh, catanh, 1); return 1; }
 
-int luaC_lunar_sinh(lua_State *L) { _unary_func(L, sinh, csinh); return 1; }
-int luaC_lunar_cosh(lua_State *L) { _unary_func(L, cosh, ccosh); return 1; }
-int luaC_lunar_tanh(lua_State *L) { _unary_func(L, tanh, ctanh); return 1; }
+int luaC_lunar_exp(lua_State *L) { _unary_func(L, exp, cexp, 1); return 1; }
+int luaC_lunar_log(lua_State *L) { _unary_func(L, log, clog, 1); return 1; }
+int luaC_lunar_log10(lua_State *L) { _unary_func(L, log10, NULL, 1); return 1; }
+int luaC_lunar_conjugate(lua_State *L) { _unary_func(L, rconj, conj, 0); return 1; }
 
-int luaC_lunar_asinh(lua_State *L) { _unary_func(L, asinh, casinh); return 1; }
-int luaC_lunar_acosh(lua_State *L) { _unary_func(L, acosh, cacosh); return 1; }
-int luaC_lunar_atanh(lua_State *L) { _unary_func(L, atanh, catanh); return 1; }
+#define EXPR_EVALF(T,N,x) {for(int i=0;i<N;++i)((T*)(x))[i]=f(((T*)(x))[i]);}
+#define EXPR_EVALG(T,N,x) {for(int i=0;i<N;++i)((T*)(x))[i]=g(((T*)(x))[i]);}
 
-int luaC_lunar_exp(lua_State *L) { _unary_func(L, exp, cexp); return 1; }
-int luaC_lunar_log(lua_State *L) { _unary_func(L, log, clog); return 1; }
-int luaC_lunar_log10(lua_State *L) { _unary_func(L, log10, NULL); return 1; }
-
-
-void _unary_func(lua_State *L, double(*f)(double), Complex(*g)(Complex))
+void _unary_func(lua_State *L, double(*f)(double), Complex(*g)(Complex), int cast)
 {
   if (lua_isnumber(L, 1)) {
     const double x = lua_tonumber(L, 1);
@@ -519,7 +540,22 @@ void _unary_func(lua_State *L, double(*f)(double), Complex(*g)(Complex))
   else if (lunar_hasmetatable(L, 1, "array")) {
     struct Array *A = (struct Array*) lunar_checkarray1(L, 1);
 
-    if (A->dtype <= ARRAY_TYPE_DOUBLE) {
+    if (cast == 0) {
+      struct Array B = array_new_copy(A, A->dtype);
+
+      switch (B.dtype) {
+      case ARRAY_TYPE_CHAR    : EXPR_EVALF(char   , B.size, B.data); break;
+      case ARRAY_TYPE_SHORT   : EXPR_EVALF(short  , B.size, B.data); break;
+      case ARRAY_TYPE_INT     : EXPR_EVALF(long   , B.size, B.data); break;
+      case ARRAY_TYPE_LONG    : EXPR_EVALF(int    , B.size, B.data); break;
+      case ARRAY_TYPE_FLOAT   : EXPR_EVALF(float  , B.size, B.data); break;
+      case ARRAY_TYPE_DOUBLE  : EXPR_EVALF(double , B.size, B.data); break;
+      case ARRAY_TYPE_COMPLEX : EXPR_EVALG(Complex, B.size, B.data); break;
+      }
+
+      lunar_pusharray1(L, &B);
+    }
+    else if (A->dtype <= ARRAY_TYPE_DOUBLE) {
       struct Array B = array_new_copy(A, ARRAY_TYPE_DOUBLE);
       double *b = (double*) B.data;
       for (int i=0; i<B.size; ++i) b[i] = f(b[i]);
@@ -556,7 +592,7 @@ int _get_index(lua_State *L, struct Array *A)
 
     if (A->ndims != Nd) {
       luaL_error(L, "wrong number of indices (%d) on array of dimension %d",
-		 Nd, A->ndims);
+                 Nd, A->ndims);
     }
     int *stride = (int*) malloc(A->ndims * sizeof(int));
     stride[Nd-1] = 1;
@@ -567,8 +603,8 @@ int _get_index(lua_State *L, struct Array *A)
 
     for (int d=0; d<A->ndims; ++d) {
       if (ind[d] >= A->shape[d] || ind[d] < 0) {
-	luaL_error(L, "array indexed out of bounds (%d) on dimension %d of size %d",
-		   ind[d], d, A->shape[d]);
+        luaL_error(L, "array indexed out of bounds (%d) on dimension %d of size %d",
+                   ind[d], d, A->shape[d]);
       }
       m += ind[d]*stride[d];
     }

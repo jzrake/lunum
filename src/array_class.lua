@@ -1,11 +1,19 @@
 
 
+
 local function copy(A)
    -- --------------------------------------------------------------------------
    -- Returns a deepcopy of the array 'A'.
    -- --------------------------------------------------------------------------
    local B = A:astype(A:dtype('enum'))
    return B
+end
+
+local function conj(A)
+   -- --------------------------------------------------------------------------
+   -- Returns the complex conjugate of the array 'A'.
+   -- --------------------------------------------------------------------------
+   return lunar.conjugate(A)
 end
 
 local function resize(A, newshape)
@@ -98,8 +106,14 @@ local function apply(f,...)
    return B
 end
 
+
+-- -----------------------------------------------------------------------------
+-- This function gets called from C code to register an array's class methods
+-- have been were implemented in Lua.
+-- -----------------------------------------------------------------------------
 local function __register(t)
    t.copy    = copy
+   t.conj    = conj
    t.resize  = resize
    t.reshape = reshape
    t.indices = indices
