@@ -34,6 +34,13 @@ local function reshape(A, newshape)
    return B
 end
 
+local function setasflat(A)
+   -- --------------------------------------------------------------------------
+   -- Resizes 'A' in-place to a flattened version.
+   -- --------------------------------------------------------------------------
+   A:resize({A:size()})
+end
+
 local function indices(A, kind)
    -- --------------------------------------------------------------------------
    -- Returns an iterator over all permutations of valid indices. If the
@@ -112,11 +119,12 @@ end
 -- have been were implemented in Lua.
 -- -----------------------------------------------------------------------------
 local function __register(t)
-   t.copy    = copy
-   t.conj    = conj
-   t.resize  = resize
-   t.reshape = reshape
-   t.indices = indices
+   t.copy      = copy
+   t.conj      = conj
+   t.resize    = resize
+   t.setasflat = setasflat
+   t.reshape   = reshape
+   t.indices   = indices
 end
 
 
