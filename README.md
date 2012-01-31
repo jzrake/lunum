@@ -51,9 +51,9 @@ stack, and obtaining them from the stack.
   types. Integral arrays are upcast to double precision, and complex
   arrays use the C complex math functions.
 
-* Lunar provides 7 atomic data types: char, short, int, long, float,
-  double, and complex. Complex values are all double precision, and
-  are built by adding the imaginary unit to a number, e.g. z = 1 +
+* Lunar provides 8 atomic data types: bool, char, short, int, long,
+  float, double, and complex. Complex values are all double precision,
+  and are built by adding the imaginary unit to a number, e.g. z = 1 +
   2*lunar.I is the complex number (1,2).
 
 
@@ -179,11 +179,30 @@ containing the indices instead of unpacking them. For example:
     end
 
 
+### array:eq(), ne(), lt(), le(), gt(), ge()
+***
+
+Array comparison functions. Compares the calling array
+element-by-element with another array and returns an array of boolean
+values accordingly. Unfortunately, the native Lua metamethods __eq,
+etc. must return booleans which is why comparisons are implemented as
+array methods. Example:
+
+    local A = lunar.array({0,1,true,false}, lunar.bool)
+    print(A) -- > [ false, true, false, true ]
+
+    local B = lunar.array{1,2,3}
+    local C = lunar.array{3,2,1}
+    print(B:ne(C)) -- > [ true, false, true ]
+
 
 ## Lunar functions
 
-### lunar.array(tab, [dtype]) *** Returns a new array from the table
-`tab` of type `dtype`. Default is double precision.
+### lunar.array(tab, [dtype])
+***
+
+Returns a new array from the table `tab` of type `dtype`. Default is
+double precision.
 
 ### lunar.zeros(N, [dtype])
 ***
@@ -210,7 +229,7 @@ number of array input arguments. Arguments must all have the same
 shape. The returned array has the highest data type of any of the
 inputs.
 
-### lunar.sin, cos, ...(val)
+### lunar.sin(), cos(), etc.
 ***
 
 Lunar math library function call. Accepts as arguments lunar arrays,

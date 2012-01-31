@@ -141,45 +141,49 @@ local function indices(A, kind)
    end
 end
 
+
+-- -----------------------------------------------------------------------------
+-- Array comparison operators.
+-- -----------------------------------------------------------------------------
 local function eq(A, B)
    check_shapes_agree(A, B)
-   local C = lunar.zeros(A:shape(), lunar.char)
-   for I in A:indices('table') do if A[I]==B[I] then C[I]=1 else C[I]=0 end end
+   local C = lunar.zeros(A:shape(), lunar.bool)
+   for I in A:indices('table') do C[I] = A[I]==B[I] end
    return C
 end
 
 local function ne(A, B)
    check_shapes_agree(A, B)
-   local C = lunar.zeros(A:shape(), lunar.char)
-   for I in A:indices('table') do if A[I]~=B[I] then C[I]=1 else C[I]=0 end end
+   local C = lunar.zeros(A:shape(), lunar.bool)
+   for I in A:indices('table') do C[I] = A[I]~=B[I] end
    return C
 end
 
 local function lt(A, B)
    check_shapes_agree(A, B)
-   local C = lunar.zeros(A:shape(), lunar.char)
-   for I in A:indices('table') do if A[I]< B[I] then C[I]=1 else C[I]=0 end end
+   local C = lunar.zeros(A:shape(), lunar.bool)
+   for I in A:indices('table') do C[I] = A[I]< B[I] end
    return C
 end
 
 local function le(A, B)
    check_shapes_agree(A, B)
-   local C = lunar.zeros(A:shape(), lunar.char)
-   for I in A:indices('table') do if A[I]<=B[I] then C[I]=1 else C[I]=0 end end
+   local C = lunar.zeros(A:shape(), lunar.bool)
+   for I in A:indices('table') do C[I] = A[I]<=B[I] end
    return C
 end
 
 local function gt(A, B)
    check_shapes_agree(A, B)
-   local C = lunar.zeros(A:shape(), lunar.char)
-   for I in A:indices('table') do if A[I]> B[I] then C[I]=1 else C[I]=0 end end
+   local C = lunar.zeros(A:shape(), lunar.bool)
+   for I in A:indices('table') do C[I] = A[I]> B[I] end
    return C
 end
 
 local function ge(A, B)
    check_shapes_agree(A, B)
-   local C = lunar.zeros(A:shape(), lunar.char)
-   for I in A:indices('table') do if A[I]>=B[I] then C[I]=1 else C[I]=0 end end
+   local C = lunar.zeros(A:shape(), lunar.bool)
+   for I in A:indices('table') do C[I] = A[I]>=B[I] end
    return C
 end
 
