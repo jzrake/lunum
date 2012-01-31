@@ -83,6 +83,9 @@ static int luaC_complex__mul(lua_State *L);
 static int luaC_complex__div(lua_State *L);
 static int luaC_complex__pow(lua_State *L);
 static int luaC_complex__unm(lua_State *L);
+static int luaC_complex__eq(lua_State *L);
+static int luaC_complex__lt(lua_State *L);
+static int luaC_complex__le(lua_State *L);
 
 
 static int   _array_binary_op1(lua_State *L, enum ArrayOperation op);
@@ -140,6 +143,9 @@ int luaopen_lunar(lua_State *L)
   LUA_NEW_METAMETHOD(L, complex, div);
   LUA_NEW_METAMETHOD(L, complex, pow);
   LUA_NEW_METAMETHOD(L, complex, unm);
+  LUA_NEW_METAMETHOD(L, complex, eq);
+  LUA_NEW_METAMETHOD(L, complex, lt);
+  LUA_NEW_METAMETHOD(L, complex, le);
   lua_pop(L, 1);
 
 
@@ -388,6 +394,31 @@ int luaC_complex__mul(lua_State *L) { return _complex_binary_op1(L, ARRAY_OP_MUL
 int luaC_complex__div(lua_State *L) { return _complex_binary_op1(L, ARRAY_OP_DIV); }
 int luaC_complex__pow(lua_State *L) { return _complex_binary_op1(L, ARRAY_OP_POW); }
 int luaC_complex__unm(lua_State *L) { _unary_func(L, runm, cunm, 0); return 1; }
+
+
+#define LUA_COMPARISON(comp)				\
+  {							\
+    Complex z1 = lunar_checkcomplex(L, 1);		\
+    Complex z2 = lunar_checkcomplex(L, 2);		\
+							\
+    if (creal(z1) != creal(z2)) {			\
+      lua_pushboolean(L, creal(z1) comp creal(z2));	\
+    }							\
+    else {						\
+      lua_pushboolean(L, cimag(z1) comp cimag(z2));	\
+    }							\
+    return 1;						\
+  }							\
+    
+int luaC_complex__lt(lua_State *L) LUA_COMPARISON(<);
+int luaC_complex__le(lua_State *L) LUA_COMPARISON(<=);
+int luaC_complex__eq(lua_State *L)
+{
+  Complex z1 = lunar_checkcomplex(L, 1);
+  Complex z2 = lunar_checkcomplex(L, 2);
+  lua_pushboolean(L, z1==z2);
+  return 1;
+}
 
 
 int _complex_binary_op1(lua_State *L, enum ArrayOperation op)
