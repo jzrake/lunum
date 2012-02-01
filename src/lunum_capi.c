@@ -40,31 +40,13 @@ struct Array *lunum_checkarray1(lua_State *L, int pos)
 
 void *lunum_checkarray2(lua_State *L, int pos, enum ArrayType T, int *N)
 {
-  lua_pushvalue(L, pos);
-  const int top = lua_gettop(L);
-
-  if (lua_istable(L, -1)) {
-    lua_getglobal(L, "lunum");
-    lua_getfield(L, -1, "array");
-    lua_insert(L, -3);
-    lua_pop(L, 1);
-    lua_pushnumber(L, T);
-    lua_call(L, 2, 1);
+  if (lunum_upcast(L, pos, T, 0)) {
+    lua_replace(L, pos);
   }
-
-  struct Array *A = lunum_checkarray1(L, top);
-  if (A->dtype != T) {
-    luaL_error(L, "expected array of type %s, got %s\n",
-               array_typename(T), array_typename(A->dtype));
-  }
-  lua_replace(L, pos);
-
+  struct Array *A = lunum_checkarray1(L, pos);
   if (N != NULL) *N = A->size;
   return A->data;
 }
-
-
-
 
 
 void lunum_astable(lua_State *L, int pos)

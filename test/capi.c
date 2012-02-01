@@ -7,6 +7,7 @@
 
 static int test_upcast(lua_State *L);
 static int test_astable(lua_State *L);
+static int test_checkarray(lua_State *L);
 
 
 int main()
@@ -17,6 +18,7 @@ int main()
 
   lua_register(L, "test_upcast", test_upcast);
   lua_register(L, "test_astable", test_astable);
+  lua_register(L, "test_checkarray", test_checkarray);
 
   if (luaL_dofile(L, "test/capi.lua")) {
     printf("%s\n", lua_tostring(L, -1));
@@ -49,4 +51,15 @@ int test_astable(lua_State *L)
   lua_replace(L, -2);
 
   return 1;
+}
+
+int test_checkarray(lua_State *L)
+{
+  int narg = lua_gettop(L);
+  for (int i=1; i<=narg; ++i) {
+    int N;
+    double *data = (double*)lunum_checkarray2(L, i, ARRAY_TYPE_DOUBLE, &N);
+    printf("argument %d had length %d\n", i, N);
+  }
+  return 0;
 }
