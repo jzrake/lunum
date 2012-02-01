@@ -1,6 +1,6 @@
 
 
-LUA = lua
+LUA = $(LUA_HOME)/bin/lua
 
 default : $(LUNUM_A) $(LUNUM_SO)
 
