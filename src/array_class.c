@@ -42,7 +42,6 @@ void _lunum_register_array(lua_State *L, struct Array *B)
   lua_call(L, 1, 0);
   lua_pop(L, 1);
 
-
   struct Array *A = (struct Array*) lua_newuserdata(L, sizeof(struct Array));
   *A = *B;
 

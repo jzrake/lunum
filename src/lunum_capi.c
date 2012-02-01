@@ -21,18 +21,19 @@ void lunum_pusharray2(lua_State *L, void *data, enum ArrayType T, int N)
   lunum_pusharray1(L, &A);
 }
 
-
 struct Array *lunum_checkarray1(lua_State *L, int pos)
 {
-  if (!lunum_hasmetatable(L, pos, "array")) {
+  lua_pushvalue(L, pos);
+
+  if (!lunum_hasmetatable(L, -1, "array")) {
     luaL_error(L, "bad argument #%d (array expected, got %s)",
-               pos, lua_typename(L, lua_type(L, pos)));
+               pos, lua_typename(L, lua_type(L, -1)));
   }
   lua_pushstring(L, "__cstruct");
-  lua_rawget(L, pos);
+  lua_rawget(L, -2);
 
-  struct Array* A = (struct Array*) lua_touserdata(L, -1);
-  lua_pop(L, 1);
+  struct Array *A = (struct Array*) lua_touserdata(L, -1);
+  lua_pop(L, 2);
 
   return A;
 }
