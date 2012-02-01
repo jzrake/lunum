@@ -2,28 +2,28 @@
 
 LUA = lua
 
-default : $(LUNAR_A) $(LUNAR_SO)
+default : $(LUNUM_A) $(LUNUM_SO)
 
 %.o : %.c
 	$(CC) $(CFLAGS) -std=c99 -c $<
 
-lunar.o : lunar.c array_class.lc
+lunum.o : lunum.c array_class.lc
 	$(CC) $(CFLAGS) -std=c99 -c $< -I$(LUA_HOME)/include
 
-lunar_capi.o : lunar_capi.c
+lunum_capi.o : lunum_capi.c
 	$(CC) $(CFLAGS) -std=c99 -c $< -I$(LUA_HOME)/include
 
 array_class.o : array_class.c
 	$(CC) $(CFLAGS) -std=c99 -c $< -I$(LUA_HOME)/include
 
-$(LUNAR_A)  : numarray.o lunar.o lunar_capi.o array_class.o
+$(LUNUM_A)  : numarray.o lunum.o lunum_capi.o array_class.o
 	$(AR) $@ $?
 
-$(LUNAR_SO) : numarray.o lunar.o lunar_capi.o array_class.o
-	$(SO) -o $(LUNAR_SO) $^
+$(LUNUM_SO) : numarray.o lunum.o lunum_capi.o array_class.o
+	$(SO) -o $(LUNUM_SO) $^
 
 array_class.lc : array_class.lua
 	$(LUA) bin2c.lua +$< > $@
 
 clean :
-	rm -f *.o $(LUNAR_A) $(LUNAR_SO) *.lc
+	rm -f *.o $(LUNUM_A) $(LUNUM_SO) *.lc

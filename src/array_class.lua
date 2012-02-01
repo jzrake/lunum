@@ -52,16 +52,16 @@ local function conj(A)
    -- --------------------------------------------------------------------------
    -- Returns the complex conjugate of the array 'A'.
    -- --------------------------------------------------------------------------
-   return lunar.conjugate(A)
+   return lunum.conjugate(A)
 end
 
 local function real(A)
    -- --------------------------------------------------------------------------
    -- Returns the real part of the array 'A'.
    -- --------------------------------------------------------------------------
-   if A:dtype('enum') ~= lunar.complex then return A:copy()
+   if A:dtype('enum') ~= lunum.complex then return A:copy()
    else
-      return A:astype(lunar.double)
+      return A:astype(lunum.double)
    end
 end
 
@@ -69,10 +69,10 @@ local function imag(A)
    -- --------------------------------------------------------------------------
    -- Returns the imaginary part of the array 'A'.
    -- --------------------------------------------------------------------------
-   if A:dtype('enum') ~= lunar.complex then
-      return lunar.zeros(A:shape(), A:dtype('enum'))
+   if A:dtype('enum') ~= lunum.complex then
+      return lunum.zeros(A:shape(), A:dtype('enum'))
    else
-      return (-lunar.I*A):astype(lunar.double)
+      return (-lunum.I*A):astype(lunum.double)
    end
 end
 
@@ -80,7 +80,7 @@ local function resize(A, newshape)
    -- --------------------------------------------------------------------------
    -- Resizes the array 'A' in-place to have the shape 'newshape'.
    -- --------------------------------------------------------------------------
-   lunar.resize(A, newshape)
+   lunum.resize(A, newshape)
    return B
 end
 
@@ -147,42 +147,42 @@ end
 -- -----------------------------------------------------------------------------
 local function eq(A, B)
    check_shapes_agree(A, B)
-   local C = lunar.zeros(A:shape(), lunar.bool)
+   local C = lunum.zeros(A:shape(), lunum.bool)
    for I in A:indices('table') do C[I] = A[I]==B[I] end
    return C
 end
 
 local function ne(A, B)
    check_shapes_agree(A, B)
-   local C = lunar.zeros(A:shape(), lunar.bool)
+   local C = lunum.zeros(A:shape(), lunum.bool)
    for I in A:indices('table') do C[I] = A[I]~=B[I] end
    return C
 end
 
 local function lt(A, B)
    check_shapes_agree(A, B)
-   local C = lunar.zeros(A:shape(), lunar.bool)
+   local C = lunum.zeros(A:shape(), lunum.bool)
    for I in A:indices('table') do C[I] = A[I]< B[I] end
    return C
 end
 
 local function le(A, B)
    check_shapes_agree(A, B)
-   local C = lunar.zeros(A:shape(), lunar.bool)
+   local C = lunum.zeros(A:shape(), lunum.bool)
    for I in A:indices('table') do C[I] = A[I]<=B[I] end
    return C
 end
 
 local function gt(A, B)
    check_shapes_agree(A, B)
-   local C = lunar.zeros(A:shape(), lunar.bool)
+   local C = lunum.zeros(A:shape(), lunum.bool)
    for I in A:indices('table') do C[I] = A[I]> B[I] end
    return C
 end
 
 local function ge(A, B)
    check_shapes_agree(A, B)
-   local C = lunar.zeros(A:shape(), lunar.bool)
+   local C = lunum.zeros(A:shape(), lunum.bool)
    for I in A:indices('table') do C[I] = A[I]>=B[I] end
    return C
 end
@@ -190,7 +190,7 @@ end
 
 local function apply(f,...)
    -- --------------------------------------------------------------------------
-   -- Returns the lunar array 'C', where C[i] = f(A[i], B[i], ...) for any
+   -- Returns the lunum array 'C', where C[i] = f(A[i], B[i], ...) for any
    -- number of array input arguments. Arguments must all have the same
    -- shape. The returned array has the highest data type of any of the inputs.
    -- --------------------------------------------------------------------------
@@ -211,7 +211,7 @@ local function apply(f,...)
       error('arguments of incompatible shapes.')
    end
 
-   local B = lunar.zeros(s1, T)
+   local B = lunum.zeros(s1, T)
    for i=0,B:size()-1 do
       local x = { }
       for d=1,#A do x[d] = A[d][i] end
@@ -246,7 +246,7 @@ end
 
 
 -- -----------------------------------------------------------------------------
--- Registering the functions with the lunar table.
+-- Registering the functions with the lunum table.
 -- -----------------------------------------------------------------------------
-lunar.__register_array = __register
-lunar.apply = apply
+lunum.__register_array = __register
+lunum.apply = apply

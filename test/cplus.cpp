@@ -1,11 +1,11 @@
 
 
-#define LUNAR_API_NOCOMPLEX
+#define LUNUM_API_NOCOMPLEX
 #include <iostream>
 
 extern "C" {
 #include "lauxlib.h"
-#include "lunar.h"
+#include "lunum.h"
 }
 
 static int upcast(lua_State *L);
@@ -14,7 +14,7 @@ int main()
 {
   lua_State *L = luaL_newstate();
   luaL_openlibs(L);
-  luaopen_lunar(L);
+  luaopen_lunum(L);
 
   lua_register(L, "upcast", upcast);
 
@@ -31,7 +31,7 @@ int upcast(lua_State *L)
 {
   enum ArrayType T = (enum ArrayType) luaL_checkinteger(L, 2);
 
-  if (lunar_upcast(L, 1, T, 0)) {
+  if (lunum_upcast(L, 1, T, 0)) {
     lua_replace(L, 1);
   }
 

@@ -1,8 +1,8 @@
 
 
-#define LUNAR_PRIVATE_API
+#define LUNUM_PRIVATE_API
 #include <string.h>
-#include "lunar.h"
+#include "lunum.h"
 #include "lauxlib.h"
 
 
@@ -13,7 +13,7 @@ static int luaC_array_astable(lua_State *L);
 static int luaC_array_astype(lua_State *L);
 
 
-void _lunar_register_array(lua_State *L, struct Array *B)
+void _lunum_register_array(lua_State *L, struct Array *B)
 {
   lua_newtable(L);
 
@@ -33,10 +33,10 @@ void _lunar_register_array(lua_State *L, struct Array *B)
   lua_setfield(L, -2, "astype");
 
 
-  // Calls code written in Lua: lunar.__register_array(new_array) to add
+  // Calls code written in Lua: lunum.__register_array(new_array) to add
   // additional methods to the new array.
   // ---------------------------------------------------------------------------
-  lua_getglobal(L, "lunar");
+  lua_getglobal(L, "lunum");
   lua_getfield(L, -1, "__register_array");
   lua_pushvalue(L, -3);
   lua_call(L, 1, 0);
@@ -61,7 +61,7 @@ int luaC_array_dtype(lua_State *L)
 // value of the Array's type.
 // -----------------------------------------------------------------------------
 {
-  struct Array *A = lunar_checkarray1(L, 1);
+  struct Array *A = lunum_checkarray1(L, 1);
 
   if (lua_isstring(L, 2)) {
     if (strcmp(lua_tostring(L, 2), "enum") == 0) {
@@ -80,8 +80,8 @@ int luaC_array_shape(lua_State *L)
 // is given, return it as an array.
 // -----------------------------------------------------------------------------
 {
-  struct Array *A = lunar_checkarray1(L, 1);
-  lunar_pusharray2(L, A->shape, ARRAY_TYPE_INT, A->ndims);
+  struct Array *A = lunum_checkarray1(L, 1);
+  lunum_pusharray2(L, A->shape, ARRAY_TYPE_INT, A->ndims);
 
   if (lua_isstring(L, 2)) {
     if (strcmp(lua_tostring(L, 2), "array") == 0) {
@@ -89,29 +89,29 @@ int luaC_array_shape(lua_State *L)
     }
   }
 
-  lunar_astable(L, 2);
+  lunum_astable(L, 2);
   lua_replace(L, -2);
   return 1;
 }
 
 int luaC_array_size(lua_State *L)
 {
-  struct Array *A = lunar_checkarray1(L, 1);
+  struct Array *A = lunum_checkarray1(L, 1);
   lua_pushnumber(L, A->size);
   return 1;
 }
 
 int luaC_array_astable(lua_State *L)
 {
-  lunar_astable(L, 1);
+  lunum_astable(L, 1);
   return 1;
 }
 
 int luaC_array_astype(lua_State *L)
 {
-  struct Array *A = lunar_checkarray1(L, 1);
+  struct Array *A = lunum_checkarray1(L, 1);
   const enum ArrayType T = (enum ArrayType) luaL_checkinteger(L, 2);
   struct Array B = array_new_copy(A, T);
-  lunar_pusharray1(L, &B);
+  lunum_pusharray1(L, &B);
   return 1;
 }

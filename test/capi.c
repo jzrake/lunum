@@ -1,7 +1,7 @@
 
 
 
-#include "lunar.h"
+#include "lunum.h"
 #include "lauxlib.h"
 
 
@@ -12,7 +12,7 @@ int main()
 {
   lua_State *L = luaL_newstate();
   luaL_openlibs(L);
-  luaopen_lunar(L);
+  luaopen_lunum(L);
 
   lua_register(L, "upcast", upcast);
 
@@ -29,7 +29,7 @@ int upcast(lua_State *L)
 {
   enum ArrayType T = luaL_checkinteger(L, 2);
 
-  if (lunar_upcast(L, 1, T, 0)) {
+  if (lunum_upcast(L, 1, T, 0)) {
     lua_replace(L, 1);
   }
 

@@ -6,7 +6,7 @@
 
 #include "lualib.h"
 #include "lauxlib.h"
-#include "lunar.h"
+#include "lunum.h"
 
 
 
@@ -30,36 +30,36 @@
 
 
 
-static int luaC_lunar_array(lua_State *L);
-static int luaC_lunar_zeros(lua_State *L);
-static int luaC_lunar_range(lua_State *L);
-static int luaC_lunar_resize(lua_State *L);
+static int luaC_lunum_array(lua_State *L);
+static int luaC_lunum_zeros(lua_State *L);
+static int luaC_lunum_range(lua_State *L);
+static int luaC_lunum_resize(lua_State *L);
 
 
-static int luaC_lunar_sin(lua_State *L);
-static int luaC_lunar_cos(lua_State *L);
-static int luaC_lunar_tan(lua_State *L);
+static int luaC_lunum_sin(lua_State *L);
+static int luaC_lunum_cos(lua_State *L);
+static int luaC_lunum_tan(lua_State *L);
 
-static int luaC_lunar_sin(lua_State *L);
-static int luaC_lunar_cos(lua_State *L);
-static int luaC_lunar_tan(lua_State *L);
+static int luaC_lunum_sin(lua_State *L);
+static int luaC_lunum_cos(lua_State *L);
+static int luaC_lunum_tan(lua_State *L);
 
-static int luaC_lunar_asin(lua_State *L);
-static int luaC_lunar_acos(lua_State *L);
-static int luaC_lunar_atan(lua_State *L);
+static int luaC_lunum_asin(lua_State *L);
+static int luaC_lunum_acos(lua_State *L);
+static int luaC_lunum_atan(lua_State *L);
 
-static int luaC_lunar_sinh(lua_State *L);
-static int luaC_lunar_cosh(lua_State *L);
-static int luaC_lunar_tanh(lua_State *L);
+static int luaC_lunum_sinh(lua_State *L);
+static int luaC_lunum_cosh(lua_State *L);
+static int luaC_lunum_tanh(lua_State *L);
 
-static int luaC_lunar_asinh(lua_State *L);
-static int luaC_lunar_acosh(lua_State *L);
-static int luaC_lunar_atanh(lua_State *L);
+static int luaC_lunum_asinh(lua_State *L);
+static int luaC_lunum_acosh(lua_State *L);
+static int luaC_lunum_atanh(lua_State *L);
 
-static int luaC_lunar_exp(lua_State *L);
-static int luaC_lunar_log(lua_State *L);
-static int luaC_lunar_log10(lua_State *L);
-static int luaC_lunar_conjugate(lua_State *L);
+static int luaC_lunum_exp(lua_State *L);
+static int luaC_lunum_log(lua_State *L);
+static int luaC_lunum_log10(lua_State *L);
+static int luaC_lunum_conjugate(lua_State *L);
 
 
 
@@ -112,7 +112,7 @@ static Complex cunm(Complex z) { return -z; } // unary minus, complex
 
 
 
-int luaopen_lunar(lua_State *L)
+int luaopen_lunum(lua_State *L)
 {
   lua_settop(L, 0); // start with an empty stack
 
@@ -149,35 +149,35 @@ int luaopen_lunar(lua_State *L)
   lua_pop(L, 1);
 
 
-  // Create the 'lunar' table
+  // Create the 'lunum' table
   // ---------------------------------------------------------------------------
   lua_newtable(L);
-  LUA_NEW_MODULEMETHOD(L, lunar, array);
-  LUA_NEW_MODULEMETHOD(L, lunar, zeros);
-  LUA_NEW_MODULEMETHOD(L, lunar, range);
-  LUA_NEW_MODULEMETHOD(L, lunar, resize);
+  LUA_NEW_MODULEMETHOD(L, lunum, array);
+  LUA_NEW_MODULEMETHOD(L, lunum, zeros);
+  LUA_NEW_MODULEMETHOD(L, lunum, range);
+  LUA_NEW_MODULEMETHOD(L, lunum, resize);
 
-  LUA_NEW_MODULEMETHOD(L, lunar, sin);
-  LUA_NEW_MODULEMETHOD(L, lunar, cos);
-  LUA_NEW_MODULEMETHOD(L, lunar, tan);
+  LUA_NEW_MODULEMETHOD(L, lunum, sin);
+  LUA_NEW_MODULEMETHOD(L, lunum, cos);
+  LUA_NEW_MODULEMETHOD(L, lunum, tan);
 
-  LUA_NEW_MODULEMETHOD(L, lunar, asin);
-  LUA_NEW_MODULEMETHOD(L, lunar, acos);
-  LUA_NEW_MODULEMETHOD(L, lunar, atan);
+  LUA_NEW_MODULEMETHOD(L, lunum, asin);
+  LUA_NEW_MODULEMETHOD(L, lunum, acos);
+  LUA_NEW_MODULEMETHOD(L, lunum, atan);
 
-  LUA_NEW_MODULEMETHOD(L, lunar, sinh);
-  LUA_NEW_MODULEMETHOD(L, lunar, cosh);
-  LUA_NEW_MODULEMETHOD(L, lunar, tanh);
+  LUA_NEW_MODULEMETHOD(L, lunum, sinh);
+  LUA_NEW_MODULEMETHOD(L, lunum, cosh);
+  LUA_NEW_MODULEMETHOD(L, lunum, tanh);
 
-  LUA_NEW_MODULEMETHOD(L, lunar, asinh);
-  LUA_NEW_MODULEMETHOD(L, lunar, acosh);
-  LUA_NEW_MODULEMETHOD(L, lunar, atanh);
+  LUA_NEW_MODULEMETHOD(L, lunum, asinh);
+  LUA_NEW_MODULEMETHOD(L, lunum, acosh);
+  LUA_NEW_MODULEMETHOD(L, lunum, atanh);
 
-  LUA_NEW_MODULEMETHOD(L, lunar, exp);
-  LUA_NEW_MODULEMETHOD(L, lunar, log);
-  LUA_NEW_MODULEMETHOD(L, lunar, log10);
+  LUA_NEW_MODULEMETHOD(L, lunum, exp);
+  LUA_NEW_MODULEMETHOD(L, lunum, log);
+  LUA_NEW_MODULEMETHOD(L, lunum, log10);
 
-  LUA_NEW_MODULEMETHOD(L, lunar, conjugate);
+  LUA_NEW_MODULEMETHOD(L, lunum, conjugate);
 
 
   LUA_NEW_MODULEDATA(L, ARRAY_TYPE_BOOL   , bool);
@@ -195,8 +195,8 @@ int luaopen_lunar(lua_State *L)
   lua_setmetatable(L, -2);
   lua_setfield(L, 1, "I");
 
-  lua_setglobal(L, "lunar");
-#include "array_class.lc" // sets the lunar.__array_methods table
+  lua_setglobal(L, "lunum");
+#include "array_class.lc" // sets the lunum.__array_methods table
 
   return 0;
 }
@@ -205,19 +205,19 @@ int luaopen_lunar(lua_State *L)
 
 
 // *****************************************************************************
-// Implementation of lunar.array metatable
+// Implementation of lunum.array metatable
 //
 // *****************************************************************************
 int luaC_array__gc(lua_State *L)
 {
-  struct Array *A = lunar_checkarray1(L, 1);
+  struct Array *A = lunum_checkarray1(L, 1);
   array_del(A);
   return 0;
 }
 
 int luaC_array__tostring(lua_State *L)
 {
-  struct Array *A = lunar_checkarray1(L, 1);
+  struct Array *A = lunum_checkarray1(L, 1);
 
   lua_pushstring(L, "  [ ");
   int nstr = 1;
@@ -257,7 +257,7 @@ int luaC_array__tostring(lua_State *L)
 
 int luaC_array__call(lua_State *L)
 {
-  struct Array *A = lunar_checkarray1(L, 1);
+  struct Array *A = lunum_checkarray1(L, 1);
   int nind = lua_gettop(L) - 1;
 
   if (nind != A->ndims) {
@@ -291,7 +291,7 @@ int luaC_array__call(lua_State *L)
 
 int luaC_array__index(lua_State *L)
 {
-  struct Array *A = lunar_checkarray1(L, 1);
+  struct Array *A = lunum_checkarray1(L, 1);
   const int m = _get_index(L, A);
 
   switch (A->dtype) {
@@ -302,7 +302,7 @@ int luaC_array__index(lua_State *L)
   case ARRAY_TYPE_LONG    : lua_pushnumber (L,    ((long   *)A->data)[m]); break;
   case ARRAY_TYPE_FLOAT   : lua_pushnumber (L,    ((float  *)A->data)[m]); break;
   case ARRAY_TYPE_DOUBLE  : lua_pushnumber (L,    ((double *)A->data)[m]); break;
-  case ARRAY_TYPE_COMPLEX : lunar_pushcomplex (L, ((Complex*)A->data)[m]); break;
+  case ARRAY_TYPE_COMPLEX : lunum_pushcomplex (L, ((Complex*)A->data)[m]); break;
   }
 
   return 1;
@@ -311,12 +311,12 @@ int luaC_array__index(lua_State *L)
 
 int luaC_array__newindex(lua_State *L)
 {
-  struct Array *A = lunar_checkarray1(L, 1);
+  struct Array *A = lunum_checkarray1(L, 1);
   const int m = _get_index(L, A);
 
   const enum ArrayType T = A->dtype;
 
-  void *val = lunar_tovalue(L, T);
+  void *val = lunum_tovalue(L, T);
   memcpy((char*)A->data + array_sizeof(T)*m, val, array_sizeof(T));
   free(val);
 
@@ -333,14 +333,14 @@ int luaC_array__unm(lua_State *L) { _unary_func(L, runm, cunm, 0); return 1; }
 
 int _array_binary_op1(lua_State *L, enum ArrayOperation op)
 {
-  if (!lunar_hasmetatable(L, 1, "array")) {
-    struct Array *B = lunar_checkarray1(L, 2);
-    lunar_upcast(L, 1, B->dtype, B->size);
+  if (!lunum_hasmetatable(L, 1, "array")) {
+    struct Array *B = lunum_checkarray1(L, 2);
+    lunum_upcast(L, 1, B->dtype, B->size);
     lua_replace(L, 1);
   }
-  if (!lunar_hasmetatable(L, 2, "array")) {
-    struct Array *A = lunar_checkarray1(L, 1);
-    lunar_upcast(L, 2, A->dtype, A->size);
+  if (!lunum_hasmetatable(L, 2, "array")) {
+    struct Array *A = lunum_checkarray1(L, 1);
+    lunum_upcast(L, 2, A->dtype, A->size);
     lua_replace(L, 2);
   }
   return _array_binary_op2(L, op);
@@ -348,8 +348,8 @@ int _array_binary_op1(lua_State *L, enum ArrayOperation op)
 
 int _array_binary_op2(lua_State *L, enum ArrayOperation op)
 {
-  struct Array *A = lunar_checkarray1(L, 1);
-  struct Array *B = lunar_checkarray1(L, 2);
+  struct Array *A = lunum_checkarray1(L, 1);
+  struct Array *B = lunum_checkarray1(L, 2);
 
   if (A->size != B->size) {
     luaL_error(L, "arrays could not be broadcast together with shapes (%d) (%d)",
@@ -362,7 +362,7 @@ int _array_binary_op2(lua_State *L, enum ArrayOperation op)
   struct Array B_ = (B->dtype == T) ? *B : array_new_copy(B, T);
 
   struct Array C = array_new_zeros(N, T);
-  lunar_pusharray1(L, &C);
+  lunum_pusharray1(L, &C);
 
   array_binary_op(&A_, &B_, &C, op);
 
@@ -378,7 +378,7 @@ int _array_binary_op2(lua_State *L, enum ArrayOperation op)
 
 
 // *****************************************************************************
-// Implementation of lunar.complex metatable
+// Implementation of lunum.complex metatable
 //
 // *****************************************************************************
 int luaC_complex__tostring(lua_State *L)
@@ -398,8 +398,8 @@ int luaC_complex__unm(lua_State *L) { _unary_func(L, runm, cunm, 0); return 1; }
 
 #define LUA_COMPARISON(comp)				\
   {							\
-    Complex z1 = lunar_checkcomplex(L, 1);		\
-    Complex z2 = lunar_checkcomplex(L, 2);		\
+    Complex z1 = lunum_checkcomplex(L, 1);		\
+    Complex z2 = lunum_checkcomplex(L, 2);		\
 							\
     if (creal(z1) != creal(z2)) {			\
       lua_pushboolean(L, creal(z1) comp creal(z2));	\
@@ -414,8 +414,8 @@ int luaC_complex__lt(lua_State *L) LUA_COMPARISON(<);
 int luaC_complex__le(lua_State *L) LUA_COMPARISON(<=);
 int luaC_complex__eq(lua_State *L)
 {
-  Complex z1 = lunar_checkcomplex(L, 1);
-  Complex z2 = lunar_checkcomplex(L, 2);
+  Complex z1 = lunum_checkcomplex(L, 1);
+  Complex z2 = lunum_checkcomplex(L, 2);
   lua_pushboolean(L, z1==z2);
   return 1;
 }
@@ -423,16 +423,16 @@ int luaC_complex__eq(lua_State *L)
 
 int _complex_binary_op1(lua_State *L, enum ArrayOperation op)
 {
-  if (lunar_hasmetatable(L, 1, "array") ||
-      lunar_hasmetatable(L, 2, "array")) {
+  if (lunum_hasmetatable(L, 1, "array") ||
+      lunum_hasmetatable(L, 2, "array")) {
     return _array_binary_op1(L, op);
   }
-  if (!lunar_hasmetatable(L, 1, "complex")) {
-    lunar_pushcomplex(L, lua_tonumber(L, 1));
+  if (!lunum_hasmetatable(L, 1, "complex")) {
+    lunum_pushcomplex(L, lua_tonumber(L, 1));
     lua_replace(L, 1);
   }
-  if (!lunar_hasmetatable(L, 2, "complex")) {
-    lunar_pushcomplex(L, lua_tonumber(L, 2));
+  if (!lunum_hasmetatable(L, 2, "complex")) {
+    lunum_pushcomplex(L, lua_tonumber(L, 2));
     lua_replace(L, 2);
   }
   return _complex_binary_op2(L, op);
@@ -465,26 +465,26 @@ int _complex_binary_op2(lua_State *L, enum ArrayOperation op)
 
 
 
-int luaC_lunar_array(lua_State *L)
+int luaC_lunum_array(lua_State *L)
 {
   const enum ArrayType T = (enum ArrayType) luaL_optinteger(L, 2, ARRAY_TYPE_DOUBLE);
-  lunar_upcast(L, 1, T, 1);
+  lunum_upcast(L, 1, T, 1);
   return 1;
 }
 
-int luaC_lunar_zeros(lua_State *L)
+int luaC_lunum_zeros(lua_State *L)
 {
   if (lua_isnumber(L, 1)) {
     const int N = luaL_checkinteger(L, 1);
     const enum ArrayType T = (enum ArrayType) luaL_optinteger(L, 2, ARRAY_TYPE_DOUBLE);
     struct Array A = array_new_zeros(N, T);
-    lunar_pusharray1(L, &A);
+    lunum_pusharray1(L, &A);
     return 1;
   }
-  else if (lua_istable(L, 1) || lunar_hasmetatable(L, 1, "array")) {
+  else if (lua_istable(L, 1) || lunum_hasmetatable(L, 1, "array")) {
 
     int Nd;
-    int *N = (int*) lunar_checkarray2(L, 1, ARRAY_TYPE_INT, &Nd);
+    int *N = (int*) lunum_checkarray2(L, 1, ARRAY_TYPE_INT, &Nd);
     const enum ArrayType T = (enum ArrayType) luaL_optinteger(L, 2, ARRAY_TYPE_DOUBLE);
 
     int ntot = 1;
@@ -492,7 +492,7 @@ int luaC_lunar_zeros(lua_State *L)
     struct Array A = array_new_zeros(ntot, T);
 
     array_resize(&A, N, Nd);
-    lunar_pusharray1(L, &A);
+    lunum_pusharray1(L, &A);
 
     return 1;
   }
@@ -502,22 +502,22 @@ int luaC_lunar_zeros(lua_State *L)
   }
 }
 
-int luaC_lunar_range(lua_State *L)
+int luaC_lunum_range(lua_State *L)
 {
   const int N = luaL_checkinteger(L, 1);
   struct Array A = array_new_zeros(N, ARRAY_TYPE_INT);
-  lunar_pusharray1(L, &A);
+  lunum_pusharray1(L, &A);
   for (int i=0; i<N; ++i) {
     ((int*)A.data)[i] = i;
   }
   return 1;
 }
 
-int luaC_lunar_resize(lua_State *L)
+int luaC_lunum_resize(lua_State *L)
 {
   int Nd;
-  struct Array *A = lunar_checkarray1(L, 1); // the array to resize
-  int *N = (int*) lunar_checkarray2(L, 2, ARRAY_TYPE_INT, &Nd);
+  struct Array *A = lunum_checkarray1(L, 1); // the array to resize
+  int *N = (int*) lunum_checkarray2(L, 2, ARRAY_TYPE_INT, &Nd);
 
   int ntot = 1;
   for (int d=0; d<Nd; ++d) ntot *= N[d];
@@ -533,26 +533,26 @@ int luaC_lunar_resize(lua_State *L)
 
 
 
-int luaC_lunar_sin(lua_State *L) { _unary_func(L, sin, csin, 1); return 1; }
-int luaC_lunar_cos(lua_State *L) { _unary_func(L, cos, ccos, 1); return 1; }
-int luaC_lunar_tan(lua_State *L) { _unary_func(L, tan, ctan, 1); return 1; }
+int luaC_lunum_sin(lua_State *L) { _unary_func(L, sin, csin, 1); return 1; }
+int luaC_lunum_cos(lua_State *L) { _unary_func(L, cos, ccos, 1); return 1; }
+int luaC_lunum_tan(lua_State *L) { _unary_func(L, tan, ctan, 1); return 1; }
 
-int luaC_lunar_asin(lua_State *L) { _unary_func(L, asin, casin, 1); return 1; }
-int luaC_lunar_acos(lua_State *L) { _unary_func(L, acos, cacos, 1); return 1; }
-int luaC_lunar_atan(lua_State *L) { _unary_func(L, atan, catan, 1); return 1; }
+int luaC_lunum_asin(lua_State *L) { _unary_func(L, asin, casin, 1); return 1; }
+int luaC_lunum_acos(lua_State *L) { _unary_func(L, acos, cacos, 1); return 1; }
+int luaC_lunum_atan(lua_State *L) { _unary_func(L, atan, catan, 1); return 1; }
 
-int luaC_lunar_sinh(lua_State *L) { _unary_func(L, sinh, csinh, 1); return 1; }
-int luaC_lunar_cosh(lua_State *L) { _unary_func(L, cosh, ccosh, 1); return 1; }
-int luaC_lunar_tanh(lua_State *L) { _unary_func(L, tanh, ctanh, 1); return 1; }
+int luaC_lunum_sinh(lua_State *L) { _unary_func(L, sinh, csinh, 1); return 1; }
+int luaC_lunum_cosh(lua_State *L) { _unary_func(L, cosh, ccosh, 1); return 1; }
+int luaC_lunum_tanh(lua_State *L) { _unary_func(L, tanh, ctanh, 1); return 1; }
 
-int luaC_lunar_asinh(lua_State *L) { _unary_func(L, asinh, casinh, 1); return 1; }
-int luaC_lunar_acosh(lua_State *L) { _unary_func(L, acosh, cacosh, 1); return 1; }
-int luaC_lunar_atanh(lua_State *L) { _unary_func(L, atanh, catanh, 1); return 1; }
+int luaC_lunum_asinh(lua_State *L) { _unary_func(L, asinh, casinh, 1); return 1; }
+int luaC_lunum_acosh(lua_State *L) { _unary_func(L, acosh, cacosh, 1); return 1; }
+int luaC_lunum_atanh(lua_State *L) { _unary_func(L, atanh, catanh, 1); return 1; }
 
-int luaC_lunar_exp(lua_State *L) { _unary_func(L, exp, cexp, 1); return 1; }
-int luaC_lunar_log(lua_State *L) { _unary_func(L, log, clog, 1); return 1; }
-int luaC_lunar_log10(lua_State *L) { _unary_func(L, log10, NULL, 1); return 1; }
-int luaC_lunar_conjugate(lua_State *L) { _unary_func(L, rconj, conj, 0); return 1; }
+int luaC_lunum_exp(lua_State *L) { _unary_func(L, exp, cexp, 1); return 1; }
+int luaC_lunum_log(lua_State *L) { _unary_func(L, log, clog, 1); return 1; }
+int luaC_lunum_log10(lua_State *L) { _unary_func(L, log10, NULL, 1); return 1; }
+int luaC_lunum_conjugate(lua_State *L) { _unary_func(L, rconj, conj, 0); return 1; }
 
 #define EXPR_EVALF(T,N,x) {for(int i=0;i<N;++i)((T*)(x))[i]=f(((T*)(x))[i]);}
 #define EXPR_EVALG(T,N,x) {for(int i=0;i<N;++i)((T*)(x))[i]=g(((T*)(x))[i]);}
@@ -563,17 +563,17 @@ void _unary_func(lua_State *L, double(*f)(double), Complex(*g)(Complex), int cas
     const double x = lua_tonumber(L, 1);
     lua_pushnumber(L, f(x));
   }
-  else if (lunar_hasmetatable(L, 1, "complex")) {
+  else if (lunum_hasmetatable(L, 1, "complex")) {
 
     if (g == NULL) {
       luaL_error(L, "complex operation not supported");
     }
 
-    const Complex z = lunar_checkcomplex(L, 1);
-    lunar_pushcomplex(L, g(z));
+    const Complex z = lunum_checkcomplex(L, 1);
+    lunum_pushcomplex(L, g(z));
   }
-  else if (lunar_hasmetatable(L, 1, "array")) {
-    struct Array *A = (struct Array*) lunar_checkarray1(L, 1);
+  else if (lunum_hasmetatable(L, 1, "array")) {
+    struct Array *A = (struct Array*) lunum_checkarray1(L, 1);
 
     if (cast == 0) {
       struct Array B = array_new_copy(A, A->dtype);
@@ -589,13 +589,13 @@ void _unary_func(lua_State *L, double(*f)(double), Complex(*g)(Complex), int cas
       case ARRAY_TYPE_COMPLEX : EXPR_EVALG(Complex, B.size, B.data); break;
       }
 
-      lunar_pusharray1(L, &B);
+      lunum_pusharray1(L, &B);
     }
     else if (A->dtype <= ARRAY_TYPE_DOUBLE) {
       struct Array B = array_new_copy(A, ARRAY_TYPE_DOUBLE);
       double *b = (double*) B.data;
       for (int i=0; i<B.size; ++i) b[i] = f(b[i]);
-      lunar_pusharray1(L, &B);
+      lunum_pusharray1(L, &B);
     }
     else if (A->dtype == ARRAY_TYPE_COMPLEX) {
 
@@ -606,7 +606,7 @@ void _unary_func(lua_State *L, double(*f)(double), Complex(*g)(Complex), int cas
       struct Array B = array_new_copy(A, ARRAY_TYPE_COMPLEX);
       Complex *b = (Complex*) B.data;
       for (int i=0; i<B.size; ++i) b[i] = g(b[i]);
-      lunar_pusharray1(L, &B);
+      lunum_pusharray1(L, &B);
     }
   }
 }
@@ -624,7 +624,7 @@ int _get_index(lua_State *L, struct Array *A)
   }
   else if (lua_istable(L, 2)) {
     int Nd;
-    int *ind = (int*) lunar_checkarray2(L, 2, ARRAY_TYPE_INT, &Nd);
+    int *ind = (int*) lunum_checkarray2(L, 2, ARRAY_TYPE_INT, &Nd);
 
     if (A->ndims != Nd) {
       luaL_error(L, "wrong number of indices (%d) on array of dimension %d",

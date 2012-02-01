@@ -1,14 +1,14 @@
 
-require 'lunar'
+require 'lunum'
 
 local function test1()
-   local A = lunar.zeros(100)
+   local A = lunum.zeros(100)
 
    for k,v in pairs(getmetatable(A)) do
       print (k,v)
    end
 
-   for k,v in pairs(lunar) do
+   for k,v in pairs(lunum) do
       print (k,v)
    end
 
@@ -18,14 +18,14 @@ local function test1()
 end
 
 local function test2()
-   local A = lunar.array({0,1,2,3,4,5,6,7,8,9})
+   local A = lunum.array({0,1,2,3,4,5,6,7,8,9})
    A[4] = 4.5
    print(A[4])
 end
 
 local function test3()
-   local A = lunar.array({0,1,2,3,4,5,6,7,8,9})
-   local B = lunar.array({9,8,7,6,5,4,3,2,1,0})
+   local A = lunum.array({0,1,2,3,4,5,6,7,8,9})
+   local B = lunum.array({9,8,7,6,5,4,3,2,1,0})
    print("(A + B)[3] = ", (A + B)[2])
    print("(A - B)[3] = ", (A - B)[2])
    print("(A * B)[3] = ", (A * B)[2])
@@ -33,20 +33,20 @@ local function test3()
 end
 
 local function test4()
-   local A = lunar.array({0,1,2,3,4,5,6,7,8,9}, lunar.float)
-   local B = lunar.array({0,1,2,3,4,5,6,7,8,9}, lunar.double)
+   local A = lunum.array({0,1,2,3,4,5,6,7,8,9}, lunum.float)
+   local B = lunum.array({0,1,2,3,4,5,6,7,8,9}, lunum.double)
    print("(A + B)[3] = ", (A + B)[2])
 end
 
 local function test5()
-   print("[char]    A*10 = ", lunar.array({0,1,2,3,4,5,6,7,8,9}, lunar.char) * 10)
-   print("[float]   A    = ", lunar.array({0,1,2,3,4,5,6,7,8,9}, lunar.float))
-   print("[complex] A    = ", lunar.array({0,1,2,3,4,5,6,7,8,9}, lunar.complex))
+   print("[char]    A*10 = ", lunum.array({0,1,2,3,4,5,6,7,8,9}, lunum.char) * 10)
+   print("[float]   A    = ", lunum.array({0,1,2,3,4,5,6,7,8,9}, lunum.float))
+   print("[complex] A    = ", lunum.array({0,1,2,3,4,5,6,7,8,9}, lunum.complex))
 end
 
 local function test6()
-   local I = lunar.I
-   local A = lunar.zeros(109, lunar.complex)
+   local I = lunum.I
+   local A = lunum.zeros(109, lunum.complex)
    A[4] = 1
    A[5] = I
    print(A[4], A[5])
@@ -54,18 +54,18 @@ local function test6()
 end
 
 local function test7()
-   local I = lunar.I
-   local A = lunar.array({1,2,3})
-   print(lunar.sin(A))
-   print(lunar.sin(A + I))
-   print(lunar.cos(A + I))
-   print(lunar.log(A + I))
-   print(lunar.atanh(A + I))
+   local I = lunum.I
+   local A = lunum.array({1,2,3})
+   print(lunum.sin(A))
+   print(lunum.sin(A + I))
+   print(lunum.cos(A + I))
+   print(lunum.log(A + I))
+   print(lunum.atanh(A + I))
 end
 
 local function test8()
-   local A = lunar.array({1,2,3,4,5,6,7,8})
-   lunar.resize(A, {4,2})
+   local A = lunum.array({1,2,3,4,5,6,7,8})
+   lunum.resize(A, {4,2})
    print(unpack(A:shape()))
    print("A(0,0) = ", A(0,0))
    print("A(0,1) = ", A(0,1))
@@ -79,8 +79,8 @@ end
 
 
 local function test9()
-   local B = lunar.array({1,2,3,4,5,6,7,8,9,10,11,12})
-   lunar.resize(B, {2,1,3,2})
+   local B = lunum.array({1,2,3,4,5,6,7,8,9,10,11,12})
+   lunum.resize(B, {2,1,3,2})
 
    for i,j,k,m in B:indices() do
       print(string.format("B(%d,%d,%d,%d) = %f", i,j,k,m, B(i,j,k,m)))
@@ -95,33 +95,33 @@ end
 local function test10()
    print("testing apply function, and resize function")
 
-   local B = lunar.range(100)
-   local C = lunar.apply(function(x,y,z) return x+y+z end, B, B, B)
+   local B = lunum.range(100)
+   local C = lunum.apply(function(x,y,z) return x+y+z end, B, B, B)
 
-   local B = lunar.zeros({10,10})
-   local C = lunar.zeros({10,10}, lunar.complex)
+   local B = lunum.zeros({10,10})
+   local C = lunum.zeros({10,10}, lunum.complex)
 
    B[{1,1}] = 1
-   C[{1,1}] = lunar.I
+   C[{1,1}] = lunum.I
 
-   local D = lunar.apply(function(x,y) return x+y end, B, C)
+   local D = lunum.apply(function(x,y) return x+y end, B, C)
    print("return array has type", D:dtype())
 
-   local C = lunar.zeros({4,4}, lunar.complex)
+   local C = lunum.zeros({4,4}, lunum.complex)
    print(C)
    print(C:shape('array'))
 
-   lunar.resize(C, {4,4})
+   lunum.resize(C, {4,4})
    print(C:shape('array'))
 end
 
 
 local function test11()
-   local C = lunar.array({0,1,true,false}, lunar.bool)
+   local C = lunum.array({0,1,true,false}, lunum.bool)
    print("{0,1,true,false} = ", C)
 
-   local A = lunar.array({1,2,3})
-   local B = lunar.array({3,2,1})
+   local A = lunum.array({1,2,3})
+   local B = lunum.array({3,2,1})
    print("A = ", A, "B = ", B)
    print("A == A ? ", A:eq(B))
    print("A ~= A ? ", A:ne(B))

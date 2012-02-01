@@ -4,27 +4,27 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define LUNAR_PRIVATE_API
-#include "lunar.h"
+#define LUNUM_PRIVATE_API
+#include "lunum.h"
 #include "lauxlib.h"
 
 
-void lunar_pusharray1(lua_State *L, struct Array *B)
+void lunum_pusharray1(lua_State *L, struct Array *B)
 {
-  _lunar_register_array(L, B);
+  _lunum_register_array(L, B);
 }
 
-void lunar_pusharray2(lua_State *L, void *data, enum ArrayType T, int N)
+void lunum_pusharray2(lua_State *L, void *data, enum ArrayType T, int N)
 {
   struct Array A = array_new_zeros(N, T);
   memcpy(A.data, data, N*array_sizeof(T));
-  lunar_pusharray1(L, &A);
+  lunum_pusharray1(L, &A);
 }
 
 
-struct Array *lunar_checkarray1(lua_State *L, int pos)
+struct Array *lunum_checkarray1(lua_State *L, int pos)
 {
-  if (!lunar_hasmetatable(L, pos, "array")) {
+  if (!lunum_hasmetatable(L, pos, "array")) {
     luaL_error(L, "bad argument #%d (array expected, got %s)",
                pos, lua_typename(L, lua_type(L, pos)));
   }
@@ -37,13 +37,13 @@ struct Array *lunar_checkarray1(lua_State *L, int pos)
   return A;
 }
 
-void *lunar_checkarray2(lua_State *L, int pos, enum ArrayType T, int *N)
+void *lunum_checkarray2(lua_State *L, int pos, enum ArrayType T, int *N)
 {
   lua_pushvalue(L, pos);
   const int top = lua_gettop(L);
 
   if (lua_istable(L, -1)) {
-    lua_getglobal(L, "lunar");
+    lua_getglobal(L, "lunum");
     lua_getfield(L, -1, "array");
     lua_insert(L, -3);
     lua_pop(L, 1);
@@ -51,7 +51,7 @@ void *lunar_checkarray2(lua_State *L, int pos, enum ArrayType T, int *N)
     lua_call(L, 2, 1);
   }
 
-  struct Array *A = lunar_checkarray1(L, top);
+  struct Array *A = lunum_checkarray1(L, top);
   if (A->dtype != T) {
     luaL_error(L, "expected array of type %s, got %s\n",
                array_typename(T), array_typename(A->dtype));
@@ -66,9 +66,9 @@ void *lunar_checkarray2(lua_State *L, int pos, enum ArrayType T, int *N)
 
 
 
-void lunar_astable(lua_State *L, int pos)
+void lunum_astable(lua_State *L, int pos)
 {
-  struct Array *A = lunar_checkarray1(L, pos);
+  struct Array *A = lunum_checkarray1(L, pos);
   const void *a = A->data;
 
   lua_newtable(L);
@@ -84,14 +84,14 @@ void lunar_astable(lua_State *L, int pos)
     case ARRAY_TYPE_LONG    : lua_pushnumber   (L, ((long    *)a)[i]); break;
     case ARRAY_TYPE_FLOAT   : lua_pushnumber   (L, ((float   *)a)[i]); break;
     case ARRAY_TYPE_DOUBLE  : lua_pushnumber   (L, ((double  *)a)[i]); break;
-    case ARRAY_TYPE_COMPLEX : lunar_pushcomplex(L, ((Complex *)a)[i]); break;
+    case ARRAY_TYPE_COMPLEX : lunum_pushcomplex(L, ((Complex *)a)[i]); break;
     }
 
     lua_settable(L, -3);
   }
 }
 
-void lunar_pushcomplex(lua_State *L, Complex z)
+void lunum_pushcomplex(lua_State *L, Complex z)
 {
   Complex *w = (Complex*) lua_newuserdata(L, sizeof(Complex));
   luaL_getmetatable(L, "complex");
@@ -99,7 +99,7 @@ void lunar_pushcomplex(lua_State *L, Complex z)
   *w = z;
 }
 
-Complex lunar_checkcomplex(lua_State *L, int n)
+Complex lunum_checkcomplex(lua_State *L, int n)
 {
   Complex *w = (Complex*) luaL_checkudata(L, n, "complex");
   return *w;
@@ -107,7 +107,7 @@ Complex lunar_checkcomplex(lua_State *L, int n)
 
 
 
-int lunar_upcast(lua_State *L, int pos, enum ArrayType T, int N)
+int lunum_upcast(lua_State *L, int pos, enum ArrayType T, int N)
 // -----------------------------------------------------------------------------
 // If the object at position 'pos' is already an array of dtype 'T', then push
 // nothing and return 0. If the dtype is not 'T', then return 1 and push a copy
@@ -117,11 +117,11 @@ int lunar_upcast(lua_State *L, int pos, enum ArrayType T, int N)
 // length 'N'.
 // -----------------------------------------------------------------------------
 {
-  // Deal with lunar.array
+  // Deal with lunum.array
   // ---------------------------------------------------------------------------
-  if (lunar_hasmetatable(L, pos, "array")) {
+  if (lunum_hasmetatable(L, pos, "array")) {
 
-    struct Array *A = lunar_checkarray1(L, pos);
+    struct Array *A = lunum_checkarray1(L, pos);
 
     if (A->dtype == T) {
       return 0;
@@ -130,7 +130,7 @@ int lunar_upcast(lua_State *L, int pos, enum ArrayType T, int N)
     else {
 
       struct Array A_ = array_new_copy(A, T);
-      lunar_pusharray1(L, &A_);
+      lunum_pusharray1(L, &A_);
       return 1;
     }
   }
@@ -146,13 +146,13 @@ int lunar_upcast(lua_State *L, int pos, enum ArrayType T, int N)
       lua_pushnumber(L, i+1);
       lua_gettable(L, pos);
 
-      void *val = lunar_tovalue(L, T);
+      void *val = lunum_tovalue(L, T);
       memcpy((char*)A.data + array_sizeof(T)*i, val, array_sizeof(T));
       free(val);
 
       lua_pop(L, 1);
     }
-    lunar_pusharray1(L, &A);
+    lunum_pusharray1(L, &A);
 
     return 1;
   }
@@ -163,7 +163,7 @@ int lunar_upcast(lua_State *L, int pos, enum ArrayType T, int N)
     const Bool x = lua_toboolean(L, pos);
     struct Array A = array_new_zeros(N, ARRAY_TYPE_BOOL);
     array_assign_from_scalar(&A, &x);
-    lunar_pusharray1(L, &A);
+    lunum_pusharray1(L, &A);
     return 1;
   }
 
@@ -174,18 +174,18 @@ int lunar_upcast(lua_State *L, int pos, enum ArrayType T, int N)
     const double x = lua_tonumber(L, pos);
     struct Array A = array_new_zeros(N, ARRAY_TYPE_DOUBLE);
     array_assign_from_scalar(&A, &x);
-    lunar_pusharray1(L, &A);
+    lunum_pusharray1(L, &A);
     return 1;
   }
 
-  // Deal with lunar.complex
+  // Deal with lunum.complex
   // ---------------------------------------------------------------------------
-  else if (lunar_hasmetatable(L, pos, "complex")) {
+  else if (lunum_hasmetatable(L, pos, "complex")) {
 
     const Complex z = *((Complex*) lua_touserdata(L, pos));
     struct Array A = array_new_zeros(N, ARRAY_TYPE_COMPLEX);
     array_assign_from_scalar(&A, &z);
-    lunar_pusharray1(L, &A);
+    lunum_pusharray1(L, &A);
     return 1;
   }
 
@@ -199,7 +199,7 @@ int lunar_upcast(lua_State *L, int pos, enum ArrayType T, int N)
 }
 
 
-int lunar_hasmetatable(lua_State *L, int pos, const char *name)
+int lunum_hasmetatable(lua_State *L, int pos, const char *name)
 {
   const int top = lua_gettop(L);
   if (lua_getmetatable(L, pos) == 0) return 0;
@@ -210,7 +210,7 @@ int lunar_hasmetatable(lua_State *L, int pos, const char *name)
 }
 
 
-void *lunar_tovalue(lua_State *L, enum ArrayType T)
+void *lunum_tovalue(lua_State *L, enum ArrayType T)
 {
   Complex x=0.0;
 
@@ -220,7 +220,7 @@ void *lunar_tovalue(lua_State *L, enum ArrayType T)
   else if (lua_isboolean(L, -1)) {
     x = lua_toboolean(L, -1);
   }
-  else if (lunar_hasmetatable(L, -1, "complex")) {
+  else if (lunum_hasmetatable(L, -1, "complex")) {
     x = *((Complex*) lua_touserdata(L, -1));
   }
   else {

@@ -42,7 +42,7 @@ DEBUG =
 # location of Lua install on this system
 LUA_HOME ?= $(PWD)/lua
 
-# where to install lunar library and include
+# where to install lunum library and include
 INSTALL_TOP = $(PWD)
 
 # C Flags
@@ -95,16 +95,16 @@ export CLIBS
 
 
 BUILD_TOP   = $(shell pwd)
-LIB_SO      = lunar.so
-LIB_A       = liblunar.a
+LIB_SO      = lunum.so
+LIB_A       = liblunum.a
 
-export LUNAR_SO = $(BUILD_TOP)/src/$(LIB_SO)
-export LUNAR_A  = $(BUILD_TOP)/src/$(LIB_A)
+export LUNUM_SO = $(BUILD_TOP)/src/$(LIB_SO)
+export LUNUM_A  = $(BUILD_TOP)/src/$(LIB_A)
 
 INSTALL_SO  = $(INSTALL_TOP)/lib/$(LIB_SO)
 INSTALL_A   = $(INSTALL_TOP)/lib/$(LIB_A)
 
-H1 = lunar.h
+H1 = lunum.h
 H2 = numarray.h
 
 HEADERS = \
@@ -112,7 +112,7 @@ HEADERS = \
 	$(INSTALL_TOP)/include/$(H2)
 
 
-default : $(LUNAR_SO) $(LUNAR_A)
+default : $(LUNUM_SO) $(LUNUM_A)
 
 config : 
 	@echo "CC           = $(CC)"
@@ -126,7 +126,7 @@ config :
 	@echo "LUA_HOME     = $(LUA_HOME)"
 	@echo "INSTALL_TOP  = $(INSTALL_TOP)"
 
-test : $(LUNAR_SO) $(LUNAR_A)
+test : $(LUNUM_SO) $(LUNUM_A)
 
 all : default test
 
@@ -140,22 +140,22 @@ $(INSTALL_TOP)/include/$(H2) :
 	mkdir -p $(INSTALL_TOP)/include
 	cp src/$(H2) $(INSTALL_TOP)/include
 
-$(LUNAR_SO) : FORCE
-	@make -C src $(LUNAR_SO)
+$(LUNUM_SO) : FORCE
+	@make -C src $(LUNUM_SO)
 
-$(LUNAR_A) : FORCE
-	@make -C src $(LUNAR_A)
+$(LUNUM_A) : FORCE
+	@make -C src $(LUNUM_A)
 
 test : FORCE
 	@make -C test
 
-$(INSTALL_SO) : $(LUNAR_SO)
+$(INSTALL_SO) : $(LUNUM_SO)
 	mkdir -p $(INSTALL_TOP)/lib
-	cp $(LUNAR_SO) $(INSTALL_TOP)/lib
+	cp $(LUNUM_SO) $(INSTALL_TOP)/lib
 
-$(INSTALL_A) : $(LUNAR_A)
+$(INSTALL_A) : $(LUNUM_A)
 	mkdir -p $(INSTALL_TOP)/lib
-	cp $(LUNAR_A) $(INSTALL_TOP)/lib
+	cp $(LUNUM_A) $(INSTALL_TOP)/lib
 
 clean :
 	make -C test clean

@@ -3,22 +3,22 @@
 
 # Introduction
 
-Lunar ('lua' + 'array') is a numeric extension for the Lua programming
-language. Its goals are to provide flexible and robust facilities for
-the manipulation of multi-dimensional numeric arrays, using a syntax
-and style that feels native to Lua, but also *guessable* to Numpy
-users. All of the hard work is done in C, making it prefectly
-acceptable for use in scientific software development.
+Lunum ('lua' + 'number') is a numeric extension for the Lua
+programming language. Its goals are to provide flexible and robust
+facilities for the manipulation of multi-dimensional numeric arrays,
+using a syntax and style that feels native to Lua, but also
+*guessable* to Numpy users. All of the hard work is done in C, making
+it prefectly acceptable for use in scientific software development.
 
-Consistent with the Lua philosophy, Lunar is easy to embed in C
+Consistent with the Lua philosophy, Lunum is easy to embed in C
 applications. This means that C applications may readily embed the Lua
-interpereter along with the Lunar API, rather than relying on building
+interpereter along with the Lunum API, rather than relying on building
 shared modules as in Python. This has important consequences,
 especially for distributed memory parallel computing where the
 embedding application may be using MPI. Thus far, there is no way of
 (simply) accomplishing this with Python and Numpy.
 
-At this time, Lunar does not offer a linear algebra or FFT
+At this time, Lunum does not offer a linear algebra or FFT
 package. When these things are implemented, they will be built
 optionally so as not to add unnecessary bulk or build dependencies to
 the code.
@@ -27,9 +27,9 @@ the code.
 
 # Conventions
 
-Unlike Lua tables with numeric keys, lunar arrays start from index
+Unlike Lua tables with numeric keys, lunum arrays start from index
 0. This is to in order to be consistent with C, Python, and numpy. The
-Luar C API provides functions for pushing new lunar arrays onto the
+Lunum C API provides functions for pushing new lunum arrays onto the
 stack, and obtaining them from the stack.
 
 
@@ -46,19 +46,19 @@ stack, and obtaining them from the stack.
   casting rules are applied to binary operations between mixed array
   types.
 
-* The C math library is exposed and overloaded through lunar. For
-  example, lunar.asinh operates correctly on all lunar data
+* The C math library is exposed and overloaded through lunum. For
+  example, lunum.asinh operates correctly on all Lunum data
   types. Integral arrays are upcast to double precision, and complex
   arrays use the C complex math functions.
 
-* Lunar provides 8 atomic data types: bool, char, short, int, long,
+* Lunum provides 8 atomic data types: bool, char, short, int, long,
   float, double, and complex. Complex values are all double precision,
   and are built by adding the imaginary unit to a number, e.g. z = 1 +
-  2*lunar.I is the complex number (1,2).
+  2*lunum.I is the complex number (1,2).
 
 
 
-# Lunar API Documentation
+# Lunum API Documentation
 
 ## Array element access
 
@@ -69,7 +69,7 @@ works with a 'flattened' view of the array. Multidimensional arrays
 may be accessed with a table of indices {i,j,k}. In this case, the
 table must have the same length as the array's dimension.
 
-    local A = lunar.zeros({10,10,3})
+    local A = lunum.zeros({10,10,3})
     A[{9,9,2}] = 3.141592653589
     print(A[{9,9,2}]) -- > '3.141592653589'
     print(A(9,9,2)) -- > '3.141592653589', short-hand for r-value access
@@ -87,14 +87,14 @@ Returns a string containing the data type of the array. If the
 optional argument 'kind' is the string 'enum', instead returns the
 type code. Useful for example,
 
-    local B = lunar.zeros(A:shape(), A:dtype('enum'))
+    local B = lunum.zeros(A:shape(), A:dtype('enum'))
 
 ### array:shape([kind])
 ***
 
 Returns an array with the array's dimensions as a table. If the
 optional argument 'kind' is the string 'array', instead the shape as
-a lunar array. Two ways of printing the shape of an array are
+a lunum array. Two ways of printing the shape of an array are
 
     print(unpack(A:shape())
     print(A:shape('array'))
@@ -146,7 +146,7 @@ Returns a deep-copy of the array.
 ### array:resize(newshape)
 ***
 
-Same as lunar.resize(A, newshape). Changes the array 'A' in-place.
+Same as lunum.resize(A, newshape). Changes the array 'A' in-place.
 
 ### array:reshape(newshape)
 ***
@@ -166,8 +166,8 @@ optional argument 'kind' is the string 'table', then returns a table
 containing the indices instead of unpacking them. For example:
 
 
-    local B = lunar.range(24)
-    lunar.resize(B, {2,2,3,2})
+    local B = lunum.range(24)
+    B:resize{2,2,3,2}
 
     for i,j,k,m in B:indices() do
        print(i,j,k,m, B(i,j,k,m))
@@ -188,51 +188,51 @@ values accordingly. Unfortunately, the native Lua metamethods __eq,
 etc. must return booleans which is why comparisons are implemented as
 array methods. Example:
 
-    local A = lunar.array({0,1,true,false}, lunar.bool)
+    local A = lunum.array({0,1,true,false}, lunum.bool)
     print(A) -- > [ false, true, false, true ]
 
-    local B = lunar.array{1,2,3}
-    local C = lunar.array{3,2,1}
+    local B = lunum.array{1,2,3}
+    local C = lunum.array{3,2,1}
     print(B:ne(C)) -- > [ true, false, true ]
 
 
-## Lunar functions
+## Lunum functions
 
-### lunar.array(tab, [dtype])
+### lunum.array(tab, [dtype])
 ***
 
 Returns a new array from the table `tab` of type `dtype`. Default is
 double precision.
 
-### lunar.zeros(N, [dtype])
+### lunum.zeros(N, [dtype])
 ***
 
 Returns a new array with `N` elements, initialized to zero, of type
 `dtype`. Default is double precision.
 
-### lunar.range(N)
+### lunum.range(N)
 ***
 Returns the integer array [0,1,...N-1]
 
-### lunar.resize(A, newshape)
+### lunum.resize(A, newshape)
 ***
 
 Resizes the array `A` (in-place) to have the dimensions given in the
 table `newshape`. The total size must be unchanged. Arrays of
 arbitrary dimension are supported.
 
-### lunar.apply(f, A, B, ...)
+### lunum.apply(f, A, B, ...)
 ***
 
-Returns the lunar array 'C', where C[i] = f(A[i], B[i], ...) for any
+Returns the lunum array 'C', where C[i] = f(A[i], B[i], ...) for any
 number of array input arguments. Arguments must all have the same
 shape. The returned array has the highest data type of any of the
 inputs.
 
-### lunar.sin(), cos(), etc.
+### lunum.sin(), cos(), etc.
 ***
 
-Lunar math library function call. Accepts as arguments lunar arrays,
+Lunum math library function call. Accepts as arguments lunum arrays,
 or single numbers of all data types. Overloaded for complex values by
 calling the appropriate functions in the C math library. All
 functions in the C math library are provided.

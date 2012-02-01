@@ -1,19 +1,19 @@
 
 
 
-local array = lunar.array
+local array = lunum.array
 
 
-local A = upcast({1,2,3}, lunar.char)
-local B = upcast(array({1,2,3}), lunar.double)
-local C = upcast(array({1,2,3}, lunar.int), lunar.long)
-local D = upcast({1,2,3}, lunar.complex)
+local A = upcast({1,2,3}, lunum.char)
+local B = upcast(array({1,2,3}), lunum.double)
+local C = upcast(array({1,2,3}, lunum.int), lunum.long)
+local D = upcast({1,2,3}, lunum.complex)
 
 
-print(lunar.dtype(A), A)
-print(lunar.dtype(B), B)
-print(lunar.dtype(C), C)
-print(lunar.dtype(D), D)
+print(A:dtype(), A)
+print(B:dtype(), B)
+print(C:dtype(), C)
+print(D:dtype(), D)
 
 print(A + {1,2,3})
 
