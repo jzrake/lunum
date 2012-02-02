@@ -81,7 +81,7 @@ void array_del(struct Array *A)
   A->shape = NULL;
 }
 
-int array_resize(struct Array *A, int *N, int Nd)
+int array_resize(struct Array *A, const int *N, int Nd)
 {
   int ntot = 1;
   for (int d=0; d<Nd; ++d) ntot *= N[d];
