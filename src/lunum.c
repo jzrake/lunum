@@ -351,10 +351,17 @@ int _array_binary_op2(lua_State *L, enum ArrayOperation op)
   struct Array *A = lunum_checkarray1(L, 1);
   struct Array *B = lunum_checkarray1(L, 2);
 
-  if (A->size != B->size) {
-    luaL_error(L, "arrays could not be broadcast together with shapes (%d) (%d)",
-               A->size, B->size);
+
+  if (A->ndims != B->ndims) {
+    luaL_error(L, "arrays have different dimensions");
   }
+  for (int d=0; d<A->ndims; ++d) {
+    if (A->shape[d] != B->shape[d]) {
+      luaL_error(L, "arrays shapes do not agree");
+    }
+  }
+
+
   const int N = A->size;
   enum ArrayType T = (A->dtype >= B->dtype) ? A->dtype : B->dtype;
 
@@ -362,6 +369,7 @@ int _array_binary_op2(lua_State *L, enum ArrayOperation op)
   struct Array B_ = (B->dtype == T) ? *B : array_new_copy(B, T);
 
   struct Array C = array_new_zeros(N, T);
+  array_resize(&C, A->shape, A->ndims);
   lunum_pusharray1(L, &C);
 
   array_binary_op(&A_, &B_, &C, op);
