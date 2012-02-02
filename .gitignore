@@ -1,0 +1,16 @@
+
+# Compiled source #
+###################
+src/*.o
+
+
+
+# Lib install     #
+###################
+bin
+lib
+include
+
+
+
+lua-5.2.0
