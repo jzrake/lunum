@@ -337,11 +337,15 @@ int _array_binary_op1(lua_State *L, enum ArrayOperation op)
     struct Array *B = lunum_checkarray1(L, 2);
     lunum_upcast(L, 1, B->dtype, B->size);
     lua_replace(L, 1);
+    struct Array *A = lunum_checkarray1(L, 1);
+    array_resize(A, B->shape, B->ndims);
   }
   if (!lunum_hasmetatable(L, 2, "array")) {
     struct Array *A = lunum_checkarray1(L, 1);
     lunum_upcast(L, 2, A->dtype, A->size);
     lua_replace(L, 2);
+    struct Array *B = lunum_checkarray1(L, 2);
+    array_resize(B, A->shape, A->ndims);
   }
   return _array_binary_op2(L, op);
 }
