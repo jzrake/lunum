@@ -66,6 +66,7 @@ struct Array array_new_zeros(int N, enum ArrayType T)
 struct Array array_new_copy(const struct Array *B, enum ArrayType T)
 {
   struct Array A = array_new_zeros(B->size, T);
+  array_resize(&A, B->shape, B->ndims);
   array_assign_from_array(&A, B);
   return A;
 }
