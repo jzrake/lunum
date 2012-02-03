@@ -27,9 +27,9 @@ the code.
 
 # Conventions
 
-Unlike Lua tables with numeric keys, lunum arrays start from index
+Unlike Lua tables with numeric keys, Lunum arrays start from index
 0. This is to in order to be consistent with C, Python, and numpy. The
-Lunum C API provides functions for pushing new lunum arrays onto the
+Lunum C API provides functions for pushing new Lunum arrays onto the
 stack, and obtaining them from the stack.
 
 
@@ -46,7 +46,7 @@ stack, and obtaining them from the stack.
   casting rules are applied to binary operations between mixed array
   types.
 
-* The C math library is exposed and overloaded through lunum. For
+* The C math library is exposed and overloaded through Lunum. For
   example, lunum.asinh operates correctly on all Lunum data
   types. Integral arrays are upcast to double precision, and complex
   arrays use the C complex math functions.
@@ -94,7 +94,7 @@ type code. Useful for example,
 
 Returns an array with the array's dimensions as a table. If the
 optional argument 'kind' is the string 'array', instead the shape as
-a lunum array. Two ways of printing the shape of an array are
+a Lunum array. Two ways of printing the shape of an array are
 
     print(unpack(A:shape())
     print(A:shape('array'))
@@ -232,7 +232,7 @@ inputs.
 ### lunum.sin(), cos(), etc.
 ***
 
-Lunum math library function call. Accepts as arguments lunum arrays,
+Lunum math library function call. Accepts as arguments Lunum arrays,
 or single numbers of all data types. Overloaded for complex values by
 calling the appropriate functions in the C math library. All
 functions in the C math library are provided.
