@@ -318,3 +318,47 @@ void array_assign_from_array(struct Array *A, const struct Array *B)
   }
 }
 
+
+void array_extract_slice(struct Array *B0, const struct Array *B1,
+			 int *start, int *size, int *stride, int Nd)
+// -----------------------------------------------------------------------------
+// Extract the slice from B1, and insert it contiguously into B0
+// -----------------------------------------------------------------------------
+// @start  : starting indices into B1
+// @size   : number of entries to extract along each axis
+// @stride : distance between entries of B1 along each axis
+// @Nd     : the number of axes in each array
+// -----------------------------------------------------------------------------
+{
+
+  char *b0 = (char*) B0->data;
+  char *b1 = (char*) B1->data;
+
+  int *N = size;
+  int *S = stride;
+  int *J = (int*) malloc(Nd*sizeof(int));
+  for (int d=0; d<Nd; ++d) J[d] = 0;
+
+  int sizeof_T = array_sizeof(B0->dtype);
+  int m = 0; // indexes into B0, advanced uniformly
+
+  while (J[0] < N[0]) {
+
+    int M = 0;
+    for (int d=0; d<Nd; ++d) M += (J[d] + start[d]) * S[d];
+
+    // ----- use the index x -----
+    memcpy(b0 + (m++)*sizeof_T, b1 + M*sizeof_T, sizeof_T);
+    // -----                 -----
+
+    ++J[Nd-1];
+    for (int d=Nd-1; d!=0; --d) {
+      if (J[d] == N[d]) {
+	J[d] = 0;
+	++J[d-1];
+      }
+    }
+  }
+
+  free(J);
+}

@@ -42,5 +42,7 @@ void          array_binary_op(const struct Array *A,
 			      struct Array *C, enum ArrayOperation op);
 int           array_sizeof(enum ArrayType T);
 int           array_resize(struct Array *A, const int *N, int Nd);
+void          array_extract_slice(struct Array *B0, const struct Array *B1,
+				  int *start, int *size, int *stride, int Nd);
 
 #endif // __Array_HEADER__

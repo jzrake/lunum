@@ -60,6 +60,7 @@ static int luaC_lunum_exp(lua_State *L);
 static int luaC_lunum_log(lua_State *L);
 static int luaC_lunum_log10(lua_State *L);
 static int luaC_lunum_conjugate(lua_State *L);
+static int luaC_lunum_slice(lua_State *L);
 
 
 
@@ -178,6 +179,8 @@ int luaopen_lunum(lua_State *L)
   LUA_NEW_MODULEMETHOD(L, lunum, log10);
 
   LUA_NEW_MODULEMETHOD(L, lunum, conjugate);
+
+  LUA_NEW_MODULEMETHOD(L, lunum, slice);
 
 
   LUA_NEW_MODULEDATA(L, ARRAY_TYPE_BOOL   , bool);
@@ -408,6 +411,10 @@ int luaC_complex__pow(lua_State *L) { return _complex_binary_op1(L, ARRAY_OP_POW
 int luaC_complex__unm(lua_State *L) { _unary_func(L, runm, cunm, 0); return 1; }
 
 
+// -----------------------------------------------------------------------------
+// Use a dictionary ordering on the complex numbers. Might not be useful too
+// often, but it's better than having this behavior undefined.
+// -----------------------------------------------------------------------------
 #define LUA_COMPARISON(comp)				\
   {							\
     Complex z1 = lunum_checkcomplex(L, 1);		\
@@ -421,7 +428,8 @@ int luaC_complex__unm(lua_State *L) { _unary_func(L, runm, cunm, 0); return 1; }
     }							\
     return 1;						\
   }							\
-    
+
+
 int luaC_complex__lt(lua_State *L) LUA_COMPARISON(<);
 int luaC_complex__le(lua_State *L) LUA_COMPARISON(<=);
 int luaC_complex__eq(lua_State *L)
@@ -541,6 +549,25 @@ int luaC_lunum_resize(lua_State *L)
   array_resize(A, N, Nd);
 
   return 0;
+}
+
+int luaC_lunum_slice(lua_State *L)
+{
+  int Nd0, Nd1, Nd2;
+  const struct Array *A = lunum_checkarray1(L, 1); // the array to resize
+  int *start  = (int*) lunum_checkarray2(L, 2, ARRAY_TYPE_INT, &Nd0);
+  int *size   = (int*) lunum_checkarray2(L, 3, ARRAY_TYPE_INT, &Nd1);
+  int *stride = (int*) lunum_checkarray2(L, 4, ARRAY_TYPE_INT, &Nd2);
+
+  int ntot = 1;
+  for (int d=0; d<Nd0; ++d) ntot *= size[d];
+
+  struct Array B = array_new_zeros(ntot, A->dtype);
+  array_extract_slice(&B, A, start, size, stride, Nd0);
+
+  lunum_pusharray1(L, &B);
+
+  return 1;
 }
 
 
