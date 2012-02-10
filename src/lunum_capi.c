@@ -40,7 +40,7 @@ struct Array *lunum_checkarray1(lua_State *L, int pos)
 
 void *lunum_checkarray2(lua_State *L, int pos, enum ArrayType T, int *N)
 {
-  if (lunum_upcast(L, pos, T, 0)) {
+  if (lunum_upcast(L, pos, T, 1)) {
     lua_replace(L, pos);
   }
   struct Array *A = lunum_checkarray1(L, pos);
@@ -153,11 +153,12 @@ int lunum_upcast(lua_State *L, int pos, enum ArrayType T, int N)
   // Deal with Lua numbers
   // ---------------------------------------------------------------------------
   else if (lua_isnumber(L, pos)) {
-
     const double x = lua_tonumber(L, pos);
     struct Array A = array_new_zeros(N, ARRAY_TYPE_DOUBLE);
     array_assign_from_scalar(&A, &x);
-    lunum_pusharray1(L, &A);
+    struct Array B = array_new_copy(&A, T);
+    array_del(&A);
+    lunum_pusharray1(L, &B);
     return 1;
   }
 
