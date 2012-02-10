@@ -1,6 +1,5 @@
 
 
-
 # Introduction
 
 Lunum ('lua' + 'number') is a numeric extension for the Lua
@@ -224,7 +223,7 @@ arbitrary dimension are supported.
 ### lunum.apply(f, A, B, ...)
 ***
 
-Returns the lunum array 'C', where C[i] = f(A[i], B[i], ...) for any
+Returns the Lunum array 'C', where C[i] = f(A[i], B[i], ...) for any
 number of array input arguments. Arguments must all have the same
 shape. The returned array has the highest data type of any of the
 inputs.
