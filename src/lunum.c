@@ -195,7 +195,8 @@ int luaopen_lunum(lua_State *L)
   lua_setglobal(L, "lunum");
 #include "array_class.lc" // sets the lunum.__array_methods table
 
-  return 0;
+  lua_getglobal(L, "lunum");
+  return 1;
 }
 
 
