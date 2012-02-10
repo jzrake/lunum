@@ -98,7 +98,6 @@ static void _unary_func(lua_State *L, double(*f)(double), Complex(*g)(Complex),
 			int cast);
 static int _get_index(lua_State *L, struct Array *A);
 
-static Complex ImaginaryUnit = I;
 
 
 // Functions used by unary predicates
@@ -190,15 +189,14 @@ int luaopen_lunum(lua_State *L)
   LUA_NEW_MODULEDATA(L, ARRAY_TYPE_COMPLEX, complex);
 
   // Register the purely imaginary number 'I'
-  lua_pushlightuserdata(L, &ImaginaryUnit);
-  luaL_getmetatable(L, "complex");
-  lua_setmetatable(L, -2);
+  lunum_pushcomplex(L, I);
   lua_setfield(L, 1, "I");
 
   lua_setglobal(L, "lunum");
 #include "array_class.lc" // sets the lunum.__array_methods table
 
-  return 0;
+  lua_getglobal(L, "lunum");
+  return 1;
 }
 
 

@@ -26,7 +26,7 @@ struct Array
 {
   void *data;
   enum ArrayType dtype;
-  int size, ndims;
+  int size, ndims, owns;
   int *shape;
 } ;
 
