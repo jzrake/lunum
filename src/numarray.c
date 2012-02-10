@@ -345,7 +345,7 @@ void array_extract_slice(struct Array *B0, const struct Array *B1,
   while (J[0] < N[0]) {
 
     int M = 0;
-    for (int d=0; d<Nd; ++d) M += (J[d] + start[d]) * S[d];
+    for (int d=0; d<Nd; ++d) M += J[d] * S[d] + start[d];
 
     // ----- use the index x -----
     memcpy(b0 + (m++)*sizeof_T, b1 + M*sizeof_T, sizeof_T);
