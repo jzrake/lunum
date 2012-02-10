@@ -1,6 +1,7 @@
 
 
 #define LUNUM_PRIVATE_API
+#include <stdlib.h>
 #include <string.h>
 #include "lunum.h"
 #include "lauxlib.h"
@@ -42,10 +43,19 @@ void _lunum_register_array(lua_State *L, struct Array *B)
   lua_call(L, 1, 0);
   lua_pop(L, 1);
 
+
+  void *data = lua_newuserdata(L, B->size * array_sizeof(B->dtype));
+  lua_setfield(L, -2, "__buffer");
+
+  memcpy(data, B->data, B->size * array_sizeof(B->dtype));
+  free(B->data);
+  B->owns = 0;
+  B->data = data;
+
   struct Array *A = (struct Array*) lua_newuserdata(L, sizeof(struct Array));
+  lua_setfield(L, -2, "__cstruct");
   *A = *B;
 
-  lua_setfield(L, -2, "__cstruct");
   luaL_getmetatable(L, "array");
   lua_setmetatable(L, -2);
 }
