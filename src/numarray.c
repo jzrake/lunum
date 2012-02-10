@@ -40,7 +40,9 @@ char *array_typename(enum ArrayType T)
 struct Array array_new_zeros(int N, enum ArrayType T)
 {
   struct Array A;
+
   A.data  = malloc(N*array_sizeof(T));
+  A.owns  = 1;
   A.size  = N;
   A.dtype = T;
   A.shape = (int*) malloc(sizeof(int));
@@ -73,7 +75,7 @@ struct Array array_new_copy(const struct Array *B, enum ArrayType T)
 
 void array_del(struct Array *A)
 {
-  if (A->data) free(A->data);
+  if (A->data && A->owns) free(A->data);
   if (A->shape) free(A->shape);
 
   A->size = 0;
