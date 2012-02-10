@@ -34,6 +34,8 @@ struct Array
 char         *array_typename(enum ArrayType T);
 struct Array  array_new_zeros(int N, enum ArrayType T);
 struct Array  array_new_copy(const struct Array *B, enum ArrayType T);
+struct Array  array_new_from_slice(const struct Array *B1,
+				   int *start, int *stop, int *skip, int Nd);
 void          array_del(struct Array *A);
 void          array_assign_from_scalar(struct Array *A, const void *val);
 void          array_assign_from_array(struct Array *A, const struct Array *B);

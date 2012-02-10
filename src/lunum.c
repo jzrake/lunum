@@ -556,25 +556,20 @@ int luaC_lunum_slice(lua_State *L)
   int Nd0, Nd1, Nd2;
   const struct Array *A = lunum_checkarray1(L, 1); // the array to resize
   int *start  = (int*) lunum_checkarray2(L, 2, ARRAY_TYPE_INT, &Nd0);
-  int *size   = (int*) lunum_checkarray2(L, 3, ARRAY_TYPE_INT, &Nd1);
-  int *stride = (int*) lunum_checkarray2(L, 4, ARRAY_TYPE_INT, &Nd2);
+  int *stop   = (int*) lunum_checkarray2(L, 3, ARRAY_TYPE_INT, &Nd1);
+  int *skip   = (int*) lunum_checkarray2(L, 4, ARRAY_TYPE_INT, &Nd2);
 
   if (Nd0 != A->ndims || Nd1 != A->ndims || Nd2 != A->ndims) {
     luaL_error(L, "slice has wrong number of dimensions for array");
   }
 
-  int ntot = 1;
   for (int d=0; d<A->ndims; ++d) {
-
-    ntot *= size[d];
-
-    if (start[d] + (size[d]-1)*stride[d] >= A->shape[d]) {
+    if (start[d] < 0 || stop[d] >= A->shape[d]) {
       luaL_error(L, "slice not within array extent");
     }
   }
 
-  struct Array B = array_new_zeros(ntot, A->dtype);
-  array_extract_slice(&B, A, start, size, stride, Nd0);
+  struct Array B = array_new_from_slice(A, start, stop, skip, Nd0);
 
   lunum_pusharray1(L, &B);
 

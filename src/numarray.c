@@ -319,33 +319,47 @@ void array_assign_from_array(struct Array *A, const struct Array *B)
 }
 
 
-void array_extract_slice(struct Array *B0, const struct Array *B1,
-			 int *start, int *size, int *stride, int Nd)
+struct Array array_new_from_slice(const struct Array *B1,
+				  int *start, int *stop, int *skip, int Nd)
 // -----------------------------------------------------------------------------
 // Extract the slice from B1, and insert it contiguously into B0
 // -----------------------------------------------------------------------------
-// @start  : starting indices into B1
-// @size   : number of entries to extract along each axis
-// @stride : distance between entries of B1 along each axis
-// @Nd     : the number of axes in each array
+// @start : starting indices into B1
+// @stop  : upper bound on selection (non-inclusive)
+// @skip  : distance between entries of B1 along each axis
+// @Nd    : the number of axes in each array
 // -----------------------------------------------------------------------------
 {
 
-  char *b0 = (char*) B0->data;
+  int *J = (int*) malloc(Nd*sizeof(int)); // current indices into B1
+  int *N = (int*) malloc(Nd*sizeof(int)); // number of elements to select
+  int *S = (int*) malloc(Nd*sizeof(int)); // strides (in memory) along each axis
+
+  int ntot = 1;
+
+  for (int d=0; d<Nd; ++d) {
+    J[d] = 0;
+    N[d] = 1 + (stop[d] - start[d] - 1) / skip[d];
+    ntot *= N[d];
+  }
+
+  S[Nd-1] = 1;
+  for (int d=Nd-2; d>=0; --d) S[d] = S[d+1] * B1->shape[d+1];
+
+
+  struct Array B0 = array_new_zeros(ntot, B1->dtype);
+  int sizeof_T = array_sizeof(B0.dtype);
+  int m = 0; // indexes into B0, advanced uniformly
+
+
+  char *b0 = (char*) B0 .data;
   char *b1 = (char*) B1->data;
 
-  int *N = size;
-  int *S = stride;
-  int *J = (int*) malloc(Nd*sizeof(int));
-  for (int d=0; d<Nd; ++d) J[d] = 0;
-
-  int sizeof_T = array_sizeof(B0->dtype);
-  int m = 0; // indexes into B0, advanced uniformly
 
   while (J[0] < N[0]) {
 
     int M = 0;
-    for (int d=0; d<Nd; ++d) M += J[d] * S[d] + start[d];
+    for (int d=0; d<Nd; ++d) M += J[d] * S[d] * skip[d] + start[d];
 
     // ----- use the index x -----
     memcpy(b0 + (m++)*sizeof_T, b1 + M*sizeof_T, sizeof_T);
@@ -361,4 +375,8 @@ void array_extract_slice(struct Array *B0, const struct Array *B1,
   }
 
   free(J);
+  free(N);
+  free(S);
+
+  return B0;
 }
