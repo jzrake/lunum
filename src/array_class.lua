@@ -227,24 +227,18 @@ local function __build_slice(A,s)
 
    for k,v in pairs(s) do
       if type(v) == 'number' then
-	 slice[k] = {v,-1,1}
-      elseif type(v) == 'table' and #v == 2 then
-	 slice[k] = {v[1], v[2], 1}
-      elseif type(v) == 'table' and #v == 3 then
-	 slice[k] = {v[1], v[2], v[3]}
+	 slice[k] = {v, A:shape()[k], 1}
+      elseif type(v) == 'table' then
+	 slice[k] = { v[1], v[2], v[3] }
       end
-   end
-   for k,v in pairs(slice) do
---      print(lunum.array(v))
    end
 
    sliceT = { {},{},{} }
 
    for i=1,#slice do
-      for j=1,3 do
---	 print(i,j)
-	 sliceT[j][i] = slice[i][j]
-      end
+      sliceT[1][i] = slice[i][1] or 0
+      sliceT[2][i] = slice[i][2] or A:shape()[i]
+      sliceT[3][i] = slice[i][3] or 1
    end
 
    return lunum.slice(A, unpack(sliceT))

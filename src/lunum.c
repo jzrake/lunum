@@ -582,7 +582,7 @@ int luaC_lunum_slice(lua_State *L)
   }
 
   for (int d=0; d<A->ndims; ++d) {
-    if (start[d] < 0 || stop[d] >= A->shape[d]) {
+    if (start[d] < 0 || stop[d] > A->shape[d]) {
       luaL_error(L, "slice not within array extent");
     }
   }
