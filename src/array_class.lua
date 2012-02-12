@@ -45,6 +45,14 @@ function string_split(self, sSeparator, nMax, bRegexp)
    return aRecord
 end
 
+function string_trim(s)
+   -- --------------------------------------------------------------------------
+   -- http://lua-users.org/wiki/CommonFunctions
+   -- from PiL2 20.4
+   -- --------------------------------------------------------------------------
+  return (s:gsub("^%s*(.-)%s*$", "%1"))
+end
+
 
 local function copy(A)
    -- --------------------------------------------------------------------------
@@ -253,12 +261,15 @@ local function __build_slice(A,t)
    local s = { }
    if type(t) == 'string' then
       for k,v in pairs(string_split(t, ',')) do
-	 s[k] = string_split(v, ':')
+	 local addr = string_split(v, ':')
+	 for i=1,#addr do
+	    if string_trim(addr[i]) == '' then addr[i] = nil end
+	 end
+	 s[k] = addr
       end
    else
       s = t
    end
-
    slice = { }
 
    for k,v in pairs(s) do

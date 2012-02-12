@@ -348,6 +348,7 @@ struct Array array_new_from_slice(const struct Array *B1,
 
 
   struct Array B0 = array_new_zeros(ntot, B1->dtype);
+  array_resize(&B0, N, Nd);
   int sizeof_T = array_sizeof(B0.dtype);
   int m = 0; // indexes into B0, advanced uniformly
 
