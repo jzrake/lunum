@@ -220,12 +220,31 @@ local function apply(f,...)
    return B
 end
 
+local function __build_slice(s)
+
+   slice = { }
+   print("checking slice...", #s)
+
+   for k,v in pairs(s) do
+      if type(v) == 'number' then
+	 slice[k] = {v,-1,1}
+      elseif type(v) == 'table' and #v == 2 then
+	 slice[k] = {v[1], v[2], 1}
+      elseif type(v) == 'table' and #v == 3 then
+	 slice[k] = {v[1], v[2], v[3]}
+      end
+   end
+   for k,v in pairs(slice) do
+      print(lunum.array(v))
+   end
+
+end
 
 -- -----------------------------------------------------------------------------
 -- This function gets called from C code to register an array's class methods
 -- have been were implemented in Lua.
 -- -----------------------------------------------------------------------------
-local function __register(t)
+local function __register_array(t)
    t.copy      = copy
    t.min       = min
    t.max       = max
@@ -248,5 +267,7 @@ end
 -- -----------------------------------------------------------------------------
 -- Registering the functions with the lunum table.
 -- -----------------------------------------------------------------------------
-lunum.__register_array = __register
+lunum.__build_slice    = __build_slice
+lunum.__register_array = __register_array
 lunum.apply = apply
+

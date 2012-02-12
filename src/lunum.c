@@ -295,6 +295,31 @@ int luaC_array__call(lua_State *L)
 int luaC_array__index(lua_State *L)
 {
   struct Array *A = lunum_checkarray1(L, 1);
+
+  // Figure out what is the format of the input index. If it's a number or a
+  // table of numbers, then pass it along to _get_index. If it's a table of
+  // tables or numbers, then assume it's a slice.
+  // ---------------------------------------------------------------------------
+  int slice = 0;
+  if (lua_istable(L, 2)) {
+
+    lua_getglobal(L, "lunum");
+    lua_getfield(L, -1, "__build_slice");
+    lua_pushvalue(L, 2);
+    lua_call(L, 1, 0);
+    lua_pop(L, 1);
+
+    int nind = lua_rawlen(L, 2);
+
+    for (int n=1; n<=nind; ++n) {
+      lua_rawgeti(L, 2, n);
+      slice += lua_istable(L, -1);
+      lua_pop(L, 1);
+    }
+  }
+
+  return 0;
+
   const int m = _get_index(L, A);
 
   switch (A->dtype) {
