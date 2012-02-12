@@ -220,10 +220,10 @@ local function apply(f,...)
    return B
 end
 
-local function __build_slice(s)
+local function __build_slice(A,s)
 
    slice = { }
-   print("checking slice...", #s)
+--   print("checking slice...", #s)
 
    for k,v in pairs(s) do
       if type(v) == 'number' then
@@ -235,9 +235,19 @@ local function __build_slice(s)
       end
    end
    for k,v in pairs(slice) do
-      print(lunum.array(v))
+--      print(lunum.array(v))
    end
 
+   sliceT = { {},{},{} }
+
+   for i=1,#slice do
+      for j=1,3 do
+--	 print(i,j)
+	 sliceT[j][i] = slice[i][j]
+      end
+   end
+
+   return lunum.slice(A, unpack(sliceT))
 end
 
 -- -----------------------------------------------------------------------------

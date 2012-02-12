@@ -300,25 +300,18 @@ int luaC_array__index(lua_State *L)
   // table of numbers, then pass it along to _get_index. If it's a table of
   // tables or numbers, then assume it's a slice.
   // ---------------------------------------------------------------------------
-  int slice = 0;
+
   if (lua_istable(L, 2)) {
 
     lua_getglobal(L, "lunum");
     lua_getfield(L, -1, "__build_slice");
+    lua_remove(L, -2);
+    lua_pushvalue(L, 1);
     lua_pushvalue(L, 2);
-    lua_call(L, 1, 0);
-    lua_pop(L, 1);
+    lua_call(L, 2, 1);
 
-    int nind = lua_rawlen(L, 2);
-
-    for (int n=1; n<=nind; ++n) {
-      lua_rawgeti(L, 2, n);
-      slice += lua_istable(L, -1);
-      lua_pop(L, 1);
-    }
+    return 1;
   }
-
-  return 0;
 
   const int m = _get_index(L, A);
 
