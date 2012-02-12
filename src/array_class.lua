@@ -259,6 +259,7 @@ end
 local function __build_slice(A,t)
 
    local s = { }
+
    if type(t) == 'string' then
       for k,v in pairs(string_split(t, ',')) do
 	 local addr = string_split(v, ':')
@@ -267,28 +268,25 @@ local function __build_slice(A,t)
 	 end
 	 s[k] = addr
       end
-   else
-      s = t
-   end
-   slice = { }
-
-   for k,v in pairs(s) do
-      if type(v) == 'number' then
-	 slice[k] = {v, A:shape()[k], 1}
-      elseif type(v) == 'table' then
-	 slice[k] = { v[1], v[2], v[3] }
+   elseif type(t) == 'table' then
+      for k,v in pairs(t) do
+	 if type(v) == 'number' then
+	    s[k] = {v, A:shape()[k], 1}
+	 elseif type(v) == 'table' then
+	    s[k] = { v[1], v[2], v[3] }
+	 end
       end
    end
 
-   sliceT = { {},{},{} }
+   local sT = { {},{},{} }
 
-   for i=1,#slice do
-      sliceT[1][i] = slice[i][1] or 0
-      sliceT[2][i] = slice[i][2] or A:shape()[i]
-      sliceT[3][i] = slice[i][3] or 1
+   for i=1,#s do
+      sT[1][i] = s[i][1] or 0
+      sT[2][i] = s[i][2] or A:shape()[i]
+      sT[3][i] = s[i][3] or 1
    end
 
-   return lunum.slice(A, unpack(sliceT))
+   return lunum.slice(A, unpack(sT))
 end
 
 -- -----------------------------------------------------------------------------
