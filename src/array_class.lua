@@ -17,6 +17,34 @@ local function check_shapes_agree(A, B)
    end
 end
 
+function string_split(self, sSeparator, nMax, bRegexp)
+   -- --------------------------------------------------------------------------
+   -- http://lua-users.org/wiki/SplitJoin
+   -- --------------------------------------------------------------------------
+   assert(sSeparator ~= '')
+   assert(nMax == nil or nMax >= 1)
+
+   local aRecord = {}
+
+   if self:len() > 0 then
+      local bPlain = not bRegexp
+      nMax = nMax or -1
+
+      local nField=1 nStart=1
+      local nFirst,nLast = self:find(sSeparator, nStart, bPlain)
+      while nFirst and nMax ~= 0 do
+         aRecord[nField] = self:sub(nStart, nFirst-1)
+         nField = nField+1
+         nStart = nLast+1
+         nFirst,nLast = self:find(sSeparator, nStart, bPlain)
+         nMax = nMax-1
+      end
+      aRecord[nField] = self:sub(nStart)
+   end
+
+   return aRecord
+end
+
 
 local function copy(A)
    -- --------------------------------------------------------------------------
@@ -220,10 +248,18 @@ local function apply(f,...)
    return B
 end
 
-local function __build_slice(A,s)
+local function __build_slice(A,t)
+
+   local s = { }
+   if type(t) == 'string' then
+      for k,v in pairs(string_split(t, ',')) do
+	 s[k] = string_split(v, ':')
+      end
+   else
+      s = t
+   end
 
    slice = { }
---   print("checking slice...", #s)
 
    for k,v in pairs(s) do
       if type(v) == 'number' then

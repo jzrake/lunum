@@ -301,7 +301,7 @@ int luaC_array__index(lua_State *L)
   // tables or numbers, then assume it's a slice.
   // ---------------------------------------------------------------------------
 
-  if (lua_istable(L, 2)) {
+  if (lua_istable(L, 2) || lua_isstring(L, 2)) {
 
     lua_getglobal(L, "lunum");
     lua_getfield(L, -1, "__build_slice");
