@@ -278,6 +278,11 @@ local function __build_slice(A,t)
       end
    end
 
+   -- Return the entirety of dims not specified.
+   for i=#s+1,#A:shape() do
+      s[i] = { nil, nil, nil }
+   end
+
    local sT = { {},{},{} }
 
    for i=1,#s do
