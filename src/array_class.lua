@@ -257,14 +257,16 @@ local function apply(f,...)
 end
 
 local function __build_slice(A,t)
-
+   -- --------------------------------------------------------------------------
+   -- Returns a slice of the lunum array 'A', i.e. A[i0:i1:si,j0:j1:sj].
+   -- --------------------------------------------------------------------------
    local s = { }
 
    if type(t) == 'string' then
       for k,v in pairs(string_split(t, ',')) do
 	 local addr = string_split(v, ':')
 	 if #addr == 1 then
-	    addr = { addr[1], addr[1]+1, 1, 1 } -- start, stop, skip, squeeze
+	    addr = { addr[1], addr[1]+1, 1, 1 }
 	 else
 	    for i=1,#addr do
 	       if string_trim(addr[i]) == '' then addr[i] = nil end

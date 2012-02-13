@@ -322,7 +322,7 @@ void array_assign_from_array(struct Array *A, const struct Array *B)
 struct Array array_new_from_slice(const struct Array *B1,
 				  int *start, int *stop, int *skip, int Nd)
 // -----------------------------------------------------------------------------
-// Extract the slice from B1, and insert it contiguously into B0
+// Extracts a slice from B1, and returns it as the contiguous array 'B0'
 // -----------------------------------------------------------------------------
 // @start : starting indices into B1
 // @stop  : upper bound on selection (non-inclusive)
