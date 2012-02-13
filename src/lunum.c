@@ -571,13 +571,20 @@ int luaC_lunum_resize(lua_State *L)
 
 int luaC_lunum_slice(lua_State *L)
 {
-  int Nd0, Nd1, Nd2;
-  const struct Array *A = lunum_checkarray1(L, 1); // the array to resize
-  int *start  = (int*) lunum_checkarray2(L, 2, ARRAY_TYPE_INT, &Nd0);
-  int *stop   = (int*) lunum_checkarray2(L, 3, ARRAY_TYPE_INT, &Nd1);
-  int *skip   = (int*) lunum_checkarray2(L, 4, ARRAY_TYPE_INT, &Nd2);
 
-  if (Nd0 != A->ndims || Nd1 != A->ndims || Nd2 != A->ndims) {
+  // The first part of this function extracts a slice of the array 'A' according
+  // to the convention start:stop:skip. The result is a contiguous array 'B'
+  // having the same number of dimensions as 'A'.
+  // ---------------------------------------------------------------------------
+  int Nd0, Nd1, Nd2, Nd3;
+
+  const struct Array *A = lunum_checkarray1(L, 1); // the array to resize
+  int *start   = (int*) lunum_checkarray2(L, 2, ARRAY_TYPE_INT, &Nd0);
+  int *stop    = (int*) lunum_checkarray2(L, 3, ARRAY_TYPE_INT, &Nd1);
+  int *skip    = (int*) lunum_checkarray2(L, 4, ARRAY_TYPE_INT, &Nd2);
+  int *squeeze = (int*) lunum_checkarray2(L, 5, ARRAY_TYPE_INT, &Nd3);
+
+  if (Nd0 != A->ndims || Nd1 != A->ndims || Nd2 != A->ndims || Nd3 != A->ndims) {
     luaL_error(L, "slice has wrong number of dimensions for array");
   }
 
@@ -586,8 +593,26 @@ int luaC_lunum_slice(lua_State *L)
       luaL_error(L, "slice not within array extent");
     }
   }
-
   struct Array B = array_new_from_slice(A, start, stop, skip, Nd0);
+
+
+  // The rest of this function deals with squeezing out the size-1 dimensions of
+  // 'B' which are marked by the 'squeeze' array.
+  // ---------------------------------------------------------------------------
+  int Nd_new = 0;
+  for (int d=0; d<Nd0; ++d) Nd_new += !squeeze[d];
+
+  int *shape_new = (int*) malloc(Nd_new * sizeof(int));
+
+  for (int d=0,e=0; d<Nd0; ++d) {
+    if (B.shape[d] > 1 || !squeeze[d]) {
+      shape_new[e] = B.shape[d];
+      ++e;
+    }
+  }
+
+  array_resize(&B, shape_new, Nd_new);
+  free(shape_new);
 
   lunum_pusharray1(L, &B);
 

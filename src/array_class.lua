@@ -263,32 +263,38 @@ local function __build_slice(A,t)
    if type(t) == 'string' then
       for k,v in pairs(string_split(t, ',')) do
 	 local addr = string_split(v, ':')
-	 for i=1,#addr do
-	    if string_trim(addr[i]) == '' then addr[i] = nil end
+	 if #addr == 1 then
+	    addr = { addr[1], addr[1]+1, 1, 1 } -- start, stop, skip, squeeze
+	 else
+	    for i=1,#addr do
+	       if string_trim(addr[i]) == '' then addr[i] = nil end
+	    end
 	 end
 	 s[k] = addr
       end
+
    elseif type(t) == 'table' then
       for k,v in pairs(t) do
 	 if type(v) == 'number' then
-	    s[k] = {v, A:shape()[k], 1}
+	    s[k] = { v, v+1, 1, 1 }
 	 elseif type(v) == 'table' then
-	    s[k] = { v[1], v[2], v[3] }
+	    s[k] = { v[1], v[2], v[3], 0 }
 	 end
       end
    end
 
    -- Return the entirety of dims not specified.
    for i=#s+1,#A:shape() do
-      s[i] = { nil, nil, nil }
+      s[i] = { nil, nil, nil, 0 }
    end
 
-   local sT = { {},{},{} }
+   local sT = { {},{},{},{} }
 
    for i=1,#s do
-      sT[1][i] = s[i][1] or 0
-      sT[2][i] = s[i][2] or A:shape()[i]
-      sT[3][i] = s[i][3] or 1
+      sT[1][i] = s[i][1] or 0            -- start
+      sT[2][i] = s[i][2] or A:shape()[i] -- stop
+      sT[3][i] = s[i][3] or 1            -- skip
+      sT[4][i] = s[i][4] or 0            -- squeeze
    end
 
    return lunum.slice(A, unpack(sT))
