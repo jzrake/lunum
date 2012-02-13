@@ -318,7 +318,6 @@ void array_assign_from_array(struct Array *A, const struct Array *B)
   }
 }
 
-
 struct Array array_new_from_slice(const struct Array *B1,
 				  int *start, int *stop, int *skip, int Nd)
 // -----------------------------------------------------------------------------
@@ -360,9 +359,9 @@ struct Array array_new_from_slice(const struct Array *B1,
   while (J[0] < N[0]) {
 
     int M = 0;
-    for (int d=0; d<Nd; ++d) M += J[d] * S[d] * skip[d] + start[d];
+    for (int d=0; d<Nd; ++d) M += (J[d] * skip[d] + start[d]) * S[d];
 
-    // ----- use the index x -----
+    // ----- use the indices m,M -----
     memcpy(b0 + (m++)*sizeof_T, b1 + M*sizeof_T, sizeof_T);
     // -----                 -----
 

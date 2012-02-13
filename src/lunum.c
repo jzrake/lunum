@@ -97,7 +97,9 @@ static int _complex_binary_op2(lua_State *L, enum ArrayOperation op);
 
 static void _unary_func(lua_State *L, double(*f)(double), Complex(*g)(Complex),
 			int cast);
+static void _push_value(lua_State *L, enum ArrayType T, void *v);
 static int _get_index(lua_State *L, struct Array *A);
+
 
 static Complex ImaginaryUnit = I;
 
@@ -275,18 +277,14 @@ int luaC_array__call(lua_State *L)
   for (int d=Nd-2; d>=0; --d) {
     stride[d] = stride[d+1] * A->shape[d+1];
   }
-  int m = 0;
 
+  int m = 0;
   for (int d=0; d<A->ndims; ++d) {
     int i = lua_tointeger(L, d+2);
     m += i*stride[d];
   }
 
-  luaL_getmetafield(L, 1, "__index");
-  lua_pushvalue(L, 1);
-  lua_pushnumber(L, m);
-
-  lua_call(L, 2, 1);
+  _push_value(L, A->dtype, (char*)A->data + m*array_sizeof(A->dtype));
   free(stride);
 
   return 1;
@@ -301,7 +299,7 @@ int luaC_array__index(lua_State *L)
   // tables or numbers, then assume it's a slice.
   // ---------------------------------------------------------------------------
 
-  if (lua_istable(L, 2) || lua_isstring(L, 2)) {
+  if (lua_type(L, 2) == LUA_TTABLE || lua_type(L, 2) == LUA_TSTRING) {
 
     lua_getglobal(L, "lunum");
     lua_getfield(L, -1, "__build_slice");
@@ -314,17 +312,7 @@ int luaC_array__index(lua_State *L)
   }
 
   const int m = _get_index(L, A);
-
-  switch (A->dtype) {
-  case ARRAY_TYPE_BOOL    : lua_pushboolean(L,    ((Bool   *)A->data)[m]); break;
-  case ARRAY_TYPE_CHAR    : lua_pushnumber (L,    ((char   *)A->data)[m]); break;
-  case ARRAY_TYPE_SHORT   : lua_pushnumber (L,    ((short  *)A->data)[m]); break;
-  case ARRAY_TYPE_INT     : lua_pushnumber (L,    ((int    *)A->data)[m]); break;
-  case ARRAY_TYPE_LONG    : lua_pushnumber (L,    ((long   *)A->data)[m]); break;
-  case ARRAY_TYPE_FLOAT   : lua_pushnumber (L,    ((float  *)A->data)[m]); break;
-  case ARRAY_TYPE_DOUBLE  : lua_pushnumber (L,    ((double *)A->data)[m]); break;
-  case ARRAY_TYPE_COMPLEX : lunum_pushcomplex (L, ((Complex*)A->data)[m]); break;
-  }
+  _push_value(L, A->dtype, (char*)A->data + array_sizeof(A->dtype)*m);
 
   return 1;
 }
@@ -584,6 +572,7 @@ int luaC_lunum_slice(lua_State *L)
   int *skip    = (int*) lunum_checkarray2(L, 4, ARRAY_TYPE_INT, &Nd2);
   int *squeeze = (int*) lunum_checkarray2(L, 5, ARRAY_TYPE_INT, &Nd3);
 
+
   if (Nd0 != A->ndims || Nd1 != A->ndims || Nd2 != A->ndims || Nd3 != A->ndims) {
     luaL_error(L, "slice has wrong number of dimensions for array");
   }
@@ -602,20 +591,26 @@ int luaC_lunum_slice(lua_State *L)
   int Nd_new = 0;
   for (int d=0; d<Nd0; ++d) Nd_new += !squeeze[d];
 
-  int *shape_new = (int*) malloc(Nd_new * sizeof(int));
+  // In case we're left with a 0-dimensional (scalar) slice
+  if (Nd_new == 0) {
+    _push_value(L, B.dtype, B.data);
+    return 1;
+  }
+  // In case there are any dims to squeeze out
+  else if (Nd_new != Nd0) {
 
-  for (int d=0,e=0; d<Nd0; ++d) {
-    if (B.shape[d] > 1 || !squeeze[d]) {
-      shape_new[e] = B.shape[d];
-      ++e;
+    int *shape_new = (int*) malloc(Nd_new * sizeof(int));
+    for (int d=0,e=0; d<Nd0; ++d) {
+      if (B.shape[d] > 1 || !squeeze[d]) {
+	shape_new[e] = B.shape[d];
+	++e;
+      }
     }
+    array_resize(&B, shape_new, Nd_new);
+    free(shape_new);
   }
 
-  array_resize(&B, shape_new, Nd_new);
-  free(shape_new);
-
   lunum_pusharray1(L, &B);
-
   return 1;
 }
 
@@ -736,3 +731,19 @@ int _get_index(lua_State *L, struct Array *A)
   }
   return m;
 }
+
+
+void _push_value(lua_State *L, enum ArrayType T, void *v)
+{
+  switch (T) {
+  case ARRAY_TYPE_BOOL    : lua_pushboolean(L,    *((Bool   *)v)); break;
+  case ARRAY_TYPE_CHAR    : lua_pushnumber (L,    *((char   *)v)); break;
+  case ARRAY_TYPE_SHORT   : lua_pushnumber (L,    *((short  *)v)); break;
+  case ARRAY_TYPE_INT     : lua_pushnumber (L,    *((int    *)v)); break;
+  case ARRAY_TYPE_LONG    : lua_pushnumber (L,    *((long   *)v)); break;
+  case ARRAY_TYPE_FLOAT   : lua_pushnumber (L,    *((float  *)v)); break;
+  case ARRAY_TYPE_DOUBLE  : lua_pushnumber (L,    *((double *)v)); break;
+  case ARRAY_TYPE_COMPLEX : lunum_pushcomplex (L, *((Complex*)v)); break;
+  }
+}
+
