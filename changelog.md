@@ -3,7 +3,7 @@
 # Version 0.5.2
 --------------------------------------------------------------------------------
 	
-## Bug fuxes
+## Bug fixes
 	
 + The C API fixes the lunum_upcast function, which was handling scalars assuming
   they were doubles
