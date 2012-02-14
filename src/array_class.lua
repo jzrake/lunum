@@ -78,10 +78,10 @@ end
 
 local function resize(A, newshape)
    -- --------------------------------------------------------------------------
-   -- Resizes the array 'A' in-place to have the shape 'newshape'.
+   -- Resizes the array 'A' in-place to have the shape 'newshape'. Returns 'A'.
    -- --------------------------------------------------------------------------
    lunum.resize(A, newshape)
-   return B
+   return A
 end
 
 local function reshape(A, newshape)
