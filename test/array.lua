@@ -132,6 +132,13 @@ local function test11()
 end
 
 
+local function test12()
+   local A = lunum.range(100):reshape{20,5}:reindex{-2,-2}
+   print("[ -2, -2 ] ?= ", A:lower('array'))
+   print("0  12      ?= ", A(-2,-2), A(0,0))
+end
+
+
 test1()
 test2()
 
@@ -146,3 +153,4 @@ test10()
 
 
 test11()
+test12()

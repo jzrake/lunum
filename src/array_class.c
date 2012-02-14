@@ -9,6 +9,7 @@
 
 static int luaC_array_dtype(lua_State *L);
 static int luaC_array_shape(lua_State *L);
+static int luaC_array_lower(lua_State *L);
 static int luaC_array_size(lua_State *L);
 static int luaC_array_astable(lua_State *L);
 static int luaC_array_astype(lua_State *L);
@@ -23,6 +24,9 @@ void _lunum_register_array(lua_State *L, struct Array *B)
 
   lua_pushcfunction(L, luaC_array_shape);
   lua_setfield(L, -2, "shape");
+
+  lua_pushcfunction(L, luaC_array_lower);
+  lua_setfield(L, -2, "lower");
 
   lua_pushcfunction(L, luaC_array_size);
   lua_setfield(L, -2, "size");
@@ -91,6 +95,26 @@ int luaC_array_shape(lua_State *L)
 {
   struct Array *A = lunum_checkarray1(L, 1);
   lunum_pusharray2(L, A->shape, ARRAY_TYPE_INT, A->ndims);
+
+  if (lua_isstring(L, 2)) {
+    if (strcmp(lua_tostring(L, 2), "array") == 0) {
+      return 1;
+    }
+  }
+
+  lunum_astable(L, 2);
+  lua_replace(L, -2);
+  return 1;
+}
+
+int luaC_array_lower(lua_State *L)
+// -----------------------------------------------------------------------------
+// If there is no argument, return the index lower-bound as a table. If the
+// string 'array' is given, return it as an array.
+// -----------------------------------------------------------------------------
+{
+  struct Array *A = lunum_checkarray1(L, 1);
+  lunum_pusharray2(L, A->lower, ARRAY_TYPE_INT, A->ndims);
 
   if (lua_isstring(L, 2)) {
     if (strcmp(lua_tostring(L, 2), "array") == 0) {

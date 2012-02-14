@@ -34,6 +34,7 @@ static int luaC_lunum_array(lua_State *L);
 static int luaC_lunum_zeros(lua_State *L);
 static int luaC_lunum_range(lua_State *L);
 static int luaC_lunum_resize(lua_State *L);
+static int luaC_lunum_reindex(lua_State *L);
 
 
 static int luaC_lunum_sin(lua_State *L);
@@ -155,6 +156,7 @@ int luaopen_lunum(lua_State *L)
   LUA_NEW_MODULEMETHOD(L, lunum, zeros);
   LUA_NEW_MODULEMETHOD(L, lunum, range);
   LUA_NEW_MODULEMETHOD(L, lunum, resize);
+  LUA_NEW_MODULEMETHOD(L, lunum, reindex);
 
   LUA_NEW_MODULEMETHOD(L, lunum, sin);
   LUA_NEW_MODULEMETHOD(L, lunum, cos);
@@ -273,7 +275,7 @@ int luaC_array__call(lua_State *L)
   int m = 0;
 
   for (int d=0; d<A->ndims; ++d) {
-    int i = lua_tointeger(L, d+2);
+    int i = lua_tointeger(L, d+2) - A->lower[d];
     m += i*stride[d];
   }
 
@@ -543,6 +545,15 @@ int luaC_lunum_resize(lua_State *L)
   return 0;
 }
 
+int luaC_lunum_reindex(lua_State *L)
+{
+  int Nd;
+  struct Array *A = lunum_checkarray1(L, 1); // the array to reindex
+  int *lower = (int*) lunum_checkarray2(L, 2, ARRAY_TYPE_INT, &Nd);
+  array_resize(A, NULL, lower, Nd);
+  return 0;
+}
+
 
 
 int luaC_lunum_sin(lua_State *L) { _unary_func(L, sin, csin, 1); return 1; }
@@ -650,11 +661,15 @@ int _get_index(lua_State *L, struct Array *A)
     }
 
     for (int d=0; d<A->ndims; ++d) {
-      if (ind[d] >= A->shape[d] || ind[d] < 0) {
+
+      int i0 = ind[d] - A->lower[d]; // compensate for lower-bound on index
+
+      if (i0 >= A->shape[d] || i0 < 0) {
+	free(stride);
         luaL_error(L, "array indexed out of bounds (%d) on dimension %d of size %d",
                    ind[d], d, A->shape[d]);
       }
-      m += ind[d]*stride[d];
+      m += i0*stride[d];
     }
     free(stride);
   }

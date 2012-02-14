@@ -94,22 +94,27 @@ int array_resize(struct Array *A, const int *N, const int *L, int Nd)
 // if 'L' is NULL leave the lower index at 0.
 // -----------------------------------------------------------------------------
 {
-  int ntot = 1;
-  for (int d=0; d<Nd; ++d) ntot *= N[d];
+  if (N != NULL) {
+    int ntot = 1;
+    for (int d=0; d<Nd; ++d) ntot *= N[d];
 
-  if (A->size != ntot) {
-    return 1;
+    if (A->size != ntot) {
+      return 1;
+    }
+
+    if (A->shape) free(A->shape);
+    if (A->lower) free(A->lower);
+
+    A->lower = (int*) malloc(Nd*sizeof(int));
+    A->shape = (int*) malloc(Nd*sizeof(int));
+    A->ndims = Nd;
+
+    for (int d=0; d<Nd; ++d) A->shape[d] = N[d];
+    for (int d=0; d<Nd; ++d) A->lower[d] = 0;
   }
-  if (A->shape) free(A->shape);
-  if (A->lower) free(A->lower);
 
-  A->ndims = Nd;
-  A->shape = (int*) malloc(Nd*sizeof(int));
-  A->lower = (int*) malloc(Nd*sizeof(int));
-
-  for (int d=0; d<Nd; ++d) {
-    A->shape[d] = N ? N[d] : A->shape[d];
-    A->lower[d] = L ? L[d] : 0;
+  if (L != NULL) {
+    for (int d=0; d<Nd; ++d) A->lower[d] = L[d];
   }
 
   return 0;

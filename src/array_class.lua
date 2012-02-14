@@ -84,6 +84,15 @@ local function resize(A, newshape)
    return A
 end
 
+local function reindex(A, lower)
+   -- --------------------------------------------------------------------------
+   -- Re-labels the lower-bound index on the array 'A' in-place to have the
+   -- lower-bound 'lower'. Returns 'A'.
+   -- --------------------------------------------------------------------------
+   lunum.reindex(A, lower)
+   return A
+end
+
 local function reshape(A, newshape)
    -- --------------------------------------------------------------------------
    -- Returns a copy of 'A' with the shape 'newshape'. Similar to array:resize,
@@ -235,6 +244,7 @@ local function __register(t)
    t.resize    = resize
    t.setasflat = setasflat
    t.reshape   = reshape
+   t.reindex   = reindex
    t.indices   = indices
    t.eq        = eq
    t.ne        = ne
