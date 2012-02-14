@@ -336,14 +336,14 @@ int _array_binary_op1(lua_State *L, enum ArrayOperation op)
     lunum_upcast(L, 1, B->dtype, B->size);
     lua_replace(L, 1);
     struct Array *A = lunum_checkarray1(L, 1);
-    array_resize(A, B->shape, B->ndims);
+    array_resize(A, B->shape, B->lower, B->ndims);
   }
   if (!lunum_hasmetatable(L, 2, "array")) {
     struct Array *A = lunum_checkarray1(L, 1);
     lunum_upcast(L, 2, A->dtype, A->size);
     lua_replace(L, 2);
     struct Array *B = lunum_checkarray1(L, 2);
-    array_resize(B, A->shape, A->ndims);
+    array_resize(B, A->shape, A->lower, A->ndims);
   }
   return _array_binary_op2(L, op);
 }
@@ -361,8 +361,10 @@ int _array_binary_op2(lua_State *L, enum ArrayOperation op)
     if (A->shape[d] != B->shape[d]) {
       luaL_error(L, "arrays shapes do not agree");
     }
+    if (A->lower[d] != B->lower[d]) {
+      luaL_error(L, "arrays have different lower bounds");
+    }
   }
-
 
   const int N = A->size;
   enum ArrayType T = (A->dtype >= B->dtype) ? A->dtype : B->dtype;
@@ -371,7 +373,7 @@ int _array_binary_op2(lua_State *L, enum ArrayOperation op)
   struct Array B_ = (B->dtype == T) ? *B : array_new_copy(B, T);
 
   struct Array C = array_new_zeros(N, T);
-  array_resize(&C, A->shape, A->ndims);
+  array_resize(&C, A->shape, A->lower, A->ndims);
   lunum_pusharray1(L, &C);
 
   array_binary_op(&A_, &B_, &C, op);
@@ -501,7 +503,7 @@ int luaC_lunum_zeros(lua_State *L)
     for (int d=0; d<Nd; ++d) ntot *= N[d];
     struct Array A = array_new_zeros(ntot, T);
 
-    array_resize(&A, N, Nd);
+    array_resize(&A, N, NULL, Nd);
     lunum_pusharray1(L, &A);
 
     return 1;
@@ -536,7 +538,7 @@ int luaC_lunum_resize(lua_State *L)
     luaL_error(L, "new and old total sizes do not agree");
     return 0;
   }
-  array_resize(A, N, Nd);
+  array_resize(A, N, NULL, Nd);
 
   return 0;
 }

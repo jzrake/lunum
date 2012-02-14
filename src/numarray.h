@@ -27,7 +27,7 @@ struct Array
   void *data;
   enum ArrayType dtype;
   int size, ndims, owns;
-  int *shape;
+  int *shape, *lower;
 } ;
 
 
@@ -41,6 +41,6 @@ void          array_binary_op(const struct Array *A,
 			      const struct Array *B,
 			      struct Array *C, enum ArrayOperation op);
 int           array_sizeof(enum ArrayType T);
-int           array_resize(struct Array *A, const int *N, int Nd);
+int           array_resize(struct Array *A, const int *N, const int *L, int Nd);
 
 #endif // __Array_HEADER__

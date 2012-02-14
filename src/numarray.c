@@ -46,9 +46,11 @@ struct Array array_new_zeros(int N, enum ArrayType T)
   A.size  = N;
   A.dtype = T;
   A.shape = (int*) malloc(sizeof(int));
+  A.lower = (int*) malloc(sizeof(int));
   A.ndims = 1;
 
   A.shape[0] = N;
+  A.lower[0] = 0;
   void *a = A.data;
 
   switch (T) {
@@ -68,7 +70,7 @@ struct Array array_new_zeros(int N, enum ArrayType T)
 struct Array array_new_copy(const struct Array *B, enum ArrayType T)
 {
   struct Array A = array_new_zeros(B->size, T);
-  array_resize(&A, B->shape, B->ndims);
+  array_resize(&A, B->shape, NULL, B->ndims);
   array_assign_from_array(&A, B);
   return A;
 }
@@ -77,13 +79,20 @@ void array_del(struct Array *A)
 {
   if (A->data && A->owns) free(A->data);
   if (A->shape) free(A->shape);
+  if (A->lower) free(A->lower);
 
   A->size = 0;
   A->data = NULL;
   A->shape = NULL;
+  A->lower = NULL;
 }
 
-int array_resize(struct Array *A, const int *N, int Nd)
+int array_resize(struct Array *A, const int *N, const int *L, int Nd)
+// -----------------------------------------------------------------------------
+// Resizes an array in-place to have the new shape-extent given by 'N', with
+// index lower bound 'L'. If 'N' is NULL, don't change the shape or ndims, and
+// if 'L' is NULL leave the lower index at 0.
+// -----------------------------------------------------------------------------
 {
   int ntot = 1;
   for (int d=0; d<Nd; ++d) ntot *= N[d];
@@ -92,10 +101,16 @@ int array_resize(struct Array *A, const int *N, int Nd)
     return 1;
   }
   if (A->shape) free(A->shape);
+  if (A->lower) free(A->lower);
 
   A->ndims = Nd;
   A->shape = (int*) malloc(Nd*sizeof(int));
-  memcpy(A->shape, N, Nd*sizeof(int));
+  A->lower = (int*) malloc(Nd*sizeof(int));
+
+  for (int d=0; d<Nd; ++d) {
+    A->shape[d] = N ? N[d] : A->shape[d];
+    A->lower[d] = L ? L[d] : 0;
+  }
 
   return 0;
 }
