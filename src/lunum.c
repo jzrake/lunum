@@ -296,10 +296,20 @@ int luaC_array__index(lua_State *L)
 
   // Figure out what is the format of the input index. If it's a number or a
   // table of numbers, then pass it along to _get_index. If it's a table of
-  // tables or numbers, then assume it's a slice.
+  // tables or numbers, then assume it's a slice. If it's an array of bools,
+  // then use it as a mask.
   // ---------------------------------------------------------------------------
 
-  if (lua_type(L, 2) == LUA_TTABLE || lua_type(L, 2) == LUA_TSTRING) {
+  if (lunum_hasmetatable(L, 2, "array")) {
+    struct Array *M = lunum_checkarray1(L, 2);
+    if (M->dtype != ARRAY_TYPE_BOOL) {
+      luaL_error(L, "index array must be of type bool");
+    }
+    struct Array B = array_new_from_mask(A, M);
+    lunum_pusharray1(L, &B);
+    return 1;
+  }
+  else if (lua_type(L, 2) == LUA_TTABLE || lua_type(L, 2) == LUA_TSTRING) {
 
     lua_getglobal(L, "lunum");
     lua_getfield(L, -1, "__build_slice");

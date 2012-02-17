@@ -30,3 +30,9 @@ end
 print("         45 ?= ", B['2,2,1'])
 print("         45 ?= ", B[{2,2,1}])
 print("         45 ?= ", B( 2,2,1 ))
+
+
+print(A:shape('array'))
+print(A[(A+1):astype(lunum.bool)]:shape('array'))
+print(A[(A+1):astype(lunum.bool)])
+
