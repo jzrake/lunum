@@ -36,6 +36,7 @@ struct Array  array_new_zeros(int N, enum ArrayType T);
 struct Array  array_new_copy(const struct Array *B, enum ArrayType T);
 struct Array  array_new_from_slice(const struct Array *B1,
 				   int *start, int *stop, int *skip, int Nd);
+struct Array array_new_from_mask(const struct Array *B1, struct Array *M);
 void          array_del(struct Array *A);
 void          array_assign_from_scalar(struct Array *A, const void *val);
 void          array_assign_from_array(struct Array *A, const struct Array *B);
