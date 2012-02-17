@@ -60,6 +60,7 @@ static int luaC_lunum_exp(lua_State *L);
 static int luaC_lunum_log(lua_State *L);
 static int luaC_lunum_log10(lua_State *L);
 static int luaC_lunum_conjugate(lua_State *L);
+static int luaC_lunum_loadtxt(lua_State *L);
 
 
 
@@ -177,6 +178,7 @@ int luaopen_lunum(lua_State *L)
   LUA_NEW_MODULEMETHOD(L, lunum, log10);
 
   LUA_NEW_MODULEMETHOD(L, lunum, conjugate);
+  LUA_NEW_MODULEMETHOD(L, lunum, loadtxt);
 
 
   LUA_NEW_MODULEDATA(L, ARRAY_TYPE_BOOL   , bool);
@@ -563,6 +565,72 @@ int luaC_lunum_exp(lua_State *L) { _unary_func(L, exp, cexp, 1); return 1; }
 int luaC_lunum_log(lua_State *L) { _unary_func(L, log, clog, 1); return 1; }
 int luaC_lunum_log10(lua_State *L) { _unary_func(L, log10, NULL, 1); return 1; }
 int luaC_lunum_conjugate(lua_State *L) { _unary_func(L, rconj, conj, 0); return 1; }
+
+
+int luaC_lunum_loadtxt(lua_State *L)
+// -----------------------------------------------------------------------------
+// Opens the text file 'fname' for reading, and parses the data
+// line-by-line. It is assumed that the data is all floating point, and that
+// only a space is used as a separator. If there are multiple columns then a 2d
+// array is created. All rows must have the same number of entries, otherwise an
+// error is generated.
+// -----------------------------------------------------------------------------
+{
+  const char *fname = luaL_checkstring(L, 1);
+  FILE *input = fopen(fname, "r");
+
+  if (input == NULL) {
+    luaL_error(L, "no such file %s", fname);
+  }
+
+  int nline = 0;
+  int ncols = 0;
+  int ntot = 0;
+  double *data = NULL;
+
+  char line[2048];
+
+  while (fgets(line, sizeof(line), input)) {
+
+    if (strlen(line) == 1) {
+      continue;
+    }
+
+    int nvals = 0;
+    double *vals = NULL;
+    char *word = strtok(line, " \n");
+
+    while (word) {
+      vals = (double*) realloc(vals, ++nvals*sizeof(double));
+      vals[nvals-1] = atof(word);
+      word = strtok(NULL, " \n");
+    }
+
+    if (ncols == 0) ncols = nvals;
+    if (ncols != nvals) {
+      luaL_error(L, "wrong number of data on line %d of %s", nline, fname);
+    }
+
+    data = (double*) realloc(data, (ntot+=nvals)*sizeof(double));
+    memcpy(data+ntot-nvals, vals, nvals*sizeof(double));
+    free(vals);
+
+    ++nline;
+  }
+  fclose(input);
+
+  lunum_pusharray2(L, data, ARRAY_TYPE_DOUBLE, ntot);
+  struct Array *A = lunum_checkarray1(L, -1);
+
+  int shape[2] = { nline, ncols };
+  array_resize(A, shape, ncols == 1 ? 1 : 2);
+
+  free(data);
+  return 1;
+}
+
+
+
 
 #define EXPR_EVALF(T,N,x) {for(int i=0;i<N;++i)((T*)(x))[i]=f(((T*)(x))[i]);}
 #define EXPR_EVALG(T,N,x) {for(int i=0;i<N;++i)((T*)(x))[i]=g(((T*)(x))[i]);}
