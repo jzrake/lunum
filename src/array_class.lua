@@ -17,6 +17,42 @@ local function check_shapes_agree(A, B)
    end
 end
 
+function string_split(self, sSeparator, nMax, bRegexp)
+   -- --------------------------------------------------------------------------
+   -- http://lua-users.org/wiki/SplitJoin
+   -- --------------------------------------------------------------------------
+   assert(sSeparator ~= '')
+   assert(nMax == nil or nMax >= 1)
+
+   local aRecord = {}
+
+   if self:len() > 0 then
+      local bPlain = not bRegexp
+      nMax = nMax or -1
+
+      local nField=1 nStart=1
+      local nFirst,nLast = self:find(sSeparator, nStart, bPlain)
+      while nFirst and nMax ~= 0 do
+         aRecord[nField] = self:sub(nStart, nFirst-1)
+         nField = nField+1
+         nStart = nLast+1
+         nFirst,nLast = self:find(sSeparator, nStart, bPlain)
+         nMax = nMax-1
+      end
+      aRecord[nField] = self:sub(nStart)
+   end
+
+   return aRecord
+end
+
+function string_trim(s)
+   -- --------------------------------------------------------------------------
+   -- http://lua-users.org/wiki/CommonFunctions
+   -- from PiL2 20.4
+   -- --------------------------------------------------------------------------
+  return (s:gsub("^%s*(.-)%s*$", "%1"))
+end
+
 
 local function copy(A)
    -- --------------------------------------------------------------------------
@@ -220,12 +256,57 @@ local function apply(f,...)
    return B
 end
 
+local function __build_slice(A,t)
+   -- --------------------------------------------------------------------------
+   -- Returns a slice of the lunum array 'A', i.e. A[i0:i1:si,j0:j1:sj].
+   -- --------------------------------------------------------------------------
+   local s = { }
+
+   if type(t) == 'string' then
+      for k,v in pairs(string_split(t, ',')) do
+	 local addr = string_split(v, ':')
+	 if #addr == 1 then
+	    addr = { addr[1], addr[1]+1, 1, 1 }
+	 else
+	    for i=1,#addr do
+	       if string_trim(addr[i]) == '' then addr[i] = nil end
+	    end
+	 end
+	 s[k] = addr
+      end
+
+   elseif type(t) == 'table' then
+      for k,v in pairs(t) do
+	 if type(v) == 'number' then
+	    s[k] = { v, v+1, 1, 1 }
+	 elseif type(v) == 'table' then
+	    s[k] = { v[1], v[2], v[3], 0 }
+	 end
+      end
+   end
+
+   -- Return the entirety of dims not specified.
+   for i=#s+1,#A:shape() do
+      s[i] = { nil, nil, nil, 0 }
+   end
+
+   local sT = { {},{},{},{} }
+
+   for i=1,#s do
+      sT[1][i] = s[i][1] or 0            -- start
+      sT[2][i] = s[i][2] or A:shape()[i] -- stop
+      sT[3][i] = s[i][3] or 1            -- skip
+      sT[4][i] = s[i][4] or 0            -- squeeze
+   end
+
+   return lunum.slice(A, unpack(sT))
+end
 
 -- -----------------------------------------------------------------------------
 -- This function gets called from C code to register an array's class methods
 -- have been were implemented in Lua.
 -- -----------------------------------------------------------------------------
-local function __register(t)
+local function __register_array(t)
    t.copy      = copy
    t.min       = min
    t.max       = max
@@ -248,5 +329,7 @@ end
 -- -----------------------------------------------------------------------------
 -- Registering the functions with the lunum table.
 -- -----------------------------------------------------------------------------
-lunum.__register_array = __register
+lunum.__build_slice    = __build_slice
+lunum.__register_array = __register_array
 lunum.apply = apply
+
