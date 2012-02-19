@@ -61,6 +61,7 @@ static int luaC_lunum_log(lua_State *L);
 static int luaC_lunum_log10(lua_State *L);
 static int luaC_lunum_conjugate(lua_State *L);
 static int luaC_lunum_loadtxt(lua_State *L);
+static int luaC_lunum_fromfile(lua_State *L);
 
 
 
@@ -179,6 +180,7 @@ int luaopen_lunum(lua_State *L)
 
   LUA_NEW_MODULEMETHOD(L, lunum, conjugate);
   LUA_NEW_MODULEMETHOD(L, lunum, loadtxt);
+  LUA_NEW_MODULEMETHOD(L, lunum, fromfile);
 
 
   LUA_NEW_MODULEDATA(L, ARRAY_TYPE_BOOL   , bool);
@@ -630,6 +632,36 @@ int luaC_lunum_loadtxt(lua_State *L)
 }
 
 
+int luaC_lunum_fromfile(lua_State *L)
+// -----------------------------------------------------------------------------
+// Opens the binary file 'fname' for reading, and returns a 1d array from the
+// data. The file size must be a multiple of the data type 'T'.
+// -----------------------------------------------------------------------------
+{
+  const char *fname = luaL_checkstring(L, 1);
+  const enum ArrayType T = luaL_optinteger(L, 2, ARRAY_TYPE_DOUBLE);
+  const int sizeof_T = array_sizeof(T);
+
+  FILE *input = fopen(fname, "rb");
+
+  if (input == NULL) {
+    luaL_error(L, "no such file %s", fname);
+  }
+  fseek(input, 0L, SEEK_END); const int sz = ftell(input);
+  fseek(input, 0L, SEEK_SET);
+
+  if (sz % sizeof_T != 0) {
+    luaL_error(L, "file size must be a multiple of the data type size");
+  }
+  const int N = sz / sizeof_T;
+  struct Array A = array_new_zeros(N, T);
+
+  fread(A.data, N, sizeof_T, input);
+  fclose(input);
+  lunum_pusharray1(L, &A);
+
+  return 1;
+}
 
 
 #define EXPR_EVALF(T,N,x) {for(int i=0;i<N;++i)((T*)(x))[i]=f(((T*)(x))[i]);}

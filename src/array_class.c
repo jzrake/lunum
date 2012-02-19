@@ -12,6 +12,7 @@ static int luaC_array_shape(lua_State *L);
 static int luaC_array_size(lua_State *L);
 static int luaC_array_astable(lua_State *L);
 static int luaC_array_astype(lua_State *L);
+static int luaC_array_tofile(lua_State *L);
 
 
 void _lunum_register_array(lua_State *L, struct Array *B)
@@ -32,6 +33,9 @@ void _lunum_register_array(lua_State *L, struct Array *B)
 
   lua_pushcfunction(L, luaC_array_astype);
   lua_setfield(L, -2, "astype");
+
+  lua_pushcfunction(L, luaC_array_tofile);
+  lua_setfield(L, -2, "tofile");
 
 
   // Calls code written in Lua: lunum.__register_array(new_array) to add
@@ -123,4 +127,24 @@ int luaC_array_astype(lua_State *L)
   struct Array B = array_new_copy(A, T);
   lunum_pusharray1(L, &B);
   return 1;
+}
+
+
+
+int luaC_array_tofile(lua_State *L)
+// -----------------------------------------------------------------------------
+// Writes the array 'A' as binary data to the file named 'fname'.
+// -----------------------------------------------------------------------------
+{
+  struct Array *A = lunum_checkarray1(L, 1);
+  const char *fname = luaL_checkstring(L, 2);
+  FILE *output = fopen(fname, "wb");
+
+  if (output == NULL) {
+    luaL_error(L, "could not create file %s", fname);
+  }
+  fwrite(A->data, A->size, array_sizeof(A->dtype), output);
+  fclose(output);
+
+  return 0;
 }
