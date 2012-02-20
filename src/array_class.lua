@@ -22,8 +22,7 @@ local function copy(A)
    -- --------------------------------------------------------------------------
    -- Returns a deepcopy of the array 'A'.
    -- --------------------------------------------------------------------------
-   local B = A:astype(A:dtype('enum'))
-   return B
+   return A:astype(A:dtype('enum'))
 end
 
 local function min(A)

@@ -34,8 +34,24 @@ char *array_typename(enum ArrayType T)
   case ARRAY_TYPE_DOUBLE  : return "double";
   case ARRAY_TYPE_COMPLEX : return "complex";
   }
-  return "unknown array type";
+  return NULL; // indicates invalid type
 }
+
+enum ArrayType array_typeflag(char c)
+{
+  switch (c) {
+  case 'b': return ARRAY_TYPE_BOOL;
+  case 'c': return ARRAY_TYPE_CHAR;
+  case 's': return ARRAY_TYPE_SHORT;
+  case 'i': return ARRAY_TYPE_INT;
+  case 'l': return ARRAY_TYPE_LONG;
+  case 'f': return ARRAY_TYPE_FLOAT;
+  case 'd': return ARRAY_TYPE_DOUBLE;
+  case 'z': return ARRAY_TYPE_COMPLEX;
+  }
+  return -1; // indicates invalid type
+}
+
 
 struct Array array_new_zeros(int N, enum ArrayType T)
 {

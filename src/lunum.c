@@ -477,8 +477,14 @@ int _complex_binary_op2(lua_State *L, enum ArrayOperation op)
 
 int luaC_lunum_array(lua_State *L)
 {
-  const enum ArrayType T = (enum ArrayType) luaL_optinteger(L, 2, ARRAY_TYPE_DOUBLE);
-  lunum_upcast(L, 1, T, 1);
+  if (lua_type(L, 2) == LUA_TSTRING) {
+    const enum ArrayType T = array_typeflag(lua_tostring(L, 2)[0]);
+    lunum_upcast(L, 1, T, 1);
+  }
+  else {
+    const enum ArrayType T = (enum ArrayType) luaL_optinteger(L, 2, ARRAY_TYPE_DOUBLE);
+    lunum_upcast(L, 1, T, 1);
+  }
   return 1;
 }
 

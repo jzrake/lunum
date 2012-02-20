@@ -100,6 +100,10 @@ int lunum_upcast(lua_State *L, int pos, enum ArrayType T, int N)
 // length 'N'.
 // -----------------------------------------------------------------------------
 {
+  if (array_typename(T) == NULL) {
+    luaL_error(L, "invalid array type");
+  }
+
   // Deal with lunum.array
   // ---------------------------------------------------------------------------
   if (lunum_hasmetatable(L, pos, "array")) {

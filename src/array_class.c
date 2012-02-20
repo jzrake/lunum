@@ -119,7 +119,15 @@ int luaC_array_astable(lua_State *L)
 int luaC_array_astype(lua_State *L)
 {
   struct Array *A = lunum_checkarray1(L, 1);
-  const enum ArrayType T = (enum ArrayType) luaL_checkinteger(L, 2);
+  enum ArrayType T;
+
+  if (lua_type(L, 2) == LUA_TSTRING) {
+    T = array_typeflag(lua_tostring(L, 2)[0]);
+  }
+  else {
+    T = (enum ArrayType) luaL_checkinteger(L, 2);
+  }
+
   struct Array B = array_new_copy(A, T);
   lunum_pusharray1(L, &B);
   return 1;
