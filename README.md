@@ -36,15 +36,18 @@ stack, and obtaining them from the stack.
 
 # Features
 
-* Arrays of arbitrary dimension are supported, however there is no
-  support for slicing operations at this time.
+* Arrays of arbitrary dimension, and a growing subset of the
+  Numpy-style array manipulation features.
 
-* Vectorized arithmetic operations are fully supported, and are
-  carried out entirely in C. These include addition, subtraction,
-  multiplication, division, and exponentiation (through '^'). Mixed
-  operations on scalar and array quantities work as expected. C
-  casting rules are applied to binary operations between mixed array
-  types.
+* Data read/write operations with binary and ASCII formats. Serialized
+  arrays with Python pickles, and JSON are planned for the near
+  future.
+
+* Vectorized arithmetic operations are implemented entirely C. These
+  include addition, subtraction, multiplication, division, and
+  exponentiation (through '^'). Mixed operations on scalar and array
+  quantities work as expected. C casting rules are applied to binary
+  operations between mixed array types.
 
 * The C math library is exposed and overloaded through Lunum. For
   example, lunum.asinh operates correctly on all Lunum data
@@ -62,6 +65,8 @@ stack, and obtaining them from the stack.
 
 ## Array element access
 
+### Single-element access
+
 Data elements in an array may be accessed as an assignable (l-value)
 by using square brackets. If the index is a number, then it is
 interpreted as an absolute offset into the internal buffer, i.e. it
@@ -74,8 +79,34 @@ table must have the same length as the array's dimension.
     print(A[{9,9,2}]) -- > '3.141592653589'
     print(A(9,9,2)) -- > '3.141592653589', short-hand for r-value access
 
-Slicing operations are not supported at this time, but may be added
-in the future.
+### Slicing
+
+As of Lunum version 0.5.3, slicing operations as r-values (on the
+right hand side of the equals sign) are supported. Slicing uses the
+same convention as Numpy, but requires a slightly different syntax
+since Lua does not allow `:`'s or `,`'s inside square brackets. It is
+easiest to demonstrate with a few examples.
+
+    local A = lunum.range(800):reshape{20,10,4} # (20 x 10 x 4) array of int's
+
+    # All equivalent ways of extracting a 1d slice along the second axis:
+    local B = A[{10,nil,1}]
+    local C = A[{10,{},1}]
+    local D = A['10,:,1'] # Using a string to describe the slice
+
+    # Ranges and strides are also supported. These all generate the same 3d array:
+    local E = A[{{0,10},nil,{0,4,2}}]
+    local F = A[{{nil,nil,4},{},{0,4,2}}]
+    local G = A['::4,:,0:4:2']
+
+Range selections are all done using the `start:stop:skip` convention,
+where the upper bound `stop` is *not* included. Describing the slice
+using a string is often the clearest syntactically, but if more
+automation is needed (for example extracting slices in a loop) the
+alternative *table of tables* works just fine too. Elements of the
+outer table labeled `nil` indicate the entire slice. `nil` or absent
+entries on the inner table means `0`, `N`, and `1` for `start`,
+`stop`, and `stride`.
 
 
 ## Array member functions
@@ -84,7 +115,7 @@ in the future.
 ***
 
 Returns a string containing the data type of the array. If the
-optional argument 'kind' is the string 'enum', instead returns the
+optional argument `kind` is the string `enum`, instead returns the
 type code. Useful for example,
 
     local B = lunum.zeros(A:shape(), A:dtype('enum'))
@@ -93,7 +124,7 @@ type code. Useful for example,
 ***
 
 Returns an array with the array's dimensions as a table. If the
-optional argument 'kind' is the string 'array', instead the shape as
+optional argument `kind` is the string `array`, instead the shape as
 a Lunum array. Two ways of printing the shape of an array are
 
     print(unpack(A:shape())
@@ -109,7 +140,7 @@ flattened copy of the array.
 ### array:astype(type)
 ***
 
-Returns the array, converted to 'type'.
+Returns the array, converted to `type`.
 
 ### array:min()
 ***
@@ -146,23 +177,23 @@ Returns a deep-copy of the array.
 ### array:resize(newshape)
 ***
 
-Same as lunum.resize(A, newshape). Changes the array 'A' in-place.
+Same as lunum.resize(A, newshape). Changes the array `A` in-place.
 
 ### array:reshape(newshape)
 ***
 
-Returns a copy of the array 'A' with the shape 'newshape'. Does not
-change 'A' at all.
+Returns a copy of the array `A` with the shape `newshape`. Does not
+change `A` at all.
 
 ### array:setasflat()
 ***
-Resizes 'A' in-place to a flattened version.
+Resizes `A` in-place to a flattened version.
 
 ### array:indices([kind])
 ***
 
 Returns an iterator over all permutations of valid indices. If the
-optional argument 'kind' is the string 'table', then returns a table
+optional argument `kind` is the string `table`, then returns a table
 containing the indices instead of unpacking them. For example:
 
 
@@ -184,7 +215,7 @@ containing the indices instead of unpacking them. For example:
 
 Array comparison functions. Compares the calling array
 element-by-element with another array and returns an array of boolean
-values accordingly. Unfortunately, the native Lua metamethods __eq,
+values accordingly. Unfortunately, the native Lua metamethods `__eq`,
 etc. must return booleans which is why comparisons are implemented as
 array methods. Example:
 
@@ -194,6 +225,12 @@ array methods. Example:
     local B = lunum.array{1,2,3}
     local C = lunum.array{3,2,1}
     print(B:ne(C)) -- > [ true, false, true ]
+
+### array:tofile(fname)
+***
+
+Writes a flattened version of the array to the file `fname` in binary
+format.
 
 
 ## Lunum functions
@@ -212,7 +249,7 @@ Returns a new array with `N` elements, initialized to zero, of type
 
 ### lunum.range(N)
 ***
-Returns the integer array [0,1,...N-1]
+Returns the integer array `[0,1,...N-1]`
 
 ### lunum.resize(A, newshape)
 ***
@@ -224,7 +261,7 @@ arbitrary dimension are supported.
 ### lunum.apply(f, A, B, ...)
 ***
 
-Returns the lunum array 'C', where C[i] = f(A[i], B[i], ...) for any
+Returns the lunum array `C`, where `C[i] = f(A[i], B[i], ...)` for any
 number of array input arguments. Arguments must all have the same
 shape. The returned array has the highest data type of any of the
 inputs.
@@ -236,3 +273,18 @@ Lunum math library function call. Accepts as arguments Lunum arrays,
 or single numbers of all data types. Overloaded for complex values by
 calling the appropriate functions in the C math library. All
 functions in the C math library are provided.
+
+### lunum.loadtxt(fname)
+***
+
+Loads an ASCII table from the file `fname`, and returns it as either a
+1d or 2d (if more than one column) array. Presently only double
+precision is supported.
+
+
+### lunum.fromfile(fname, [dtype])
+***
+
+Opens the binary file `fname` for reading, and returns a 1d array from
+the data. The file size must be a multiple of the data type `type`,
+which defaults to `double`.
