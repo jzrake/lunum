@@ -39,6 +39,10 @@ stack, and obtaining them from the stack.
 * Arrays of arbitrary dimension, and a growing subset of the
   Numpy-style array manipulation features.
 
+* Broadcasting of differently shaped arraysis not yet
+  supported. Presently, all operation must be between arrays of the
+  same shape, or between arrays and scalars.
+
 * Data read/write operations with binary and ASCII formats. Serialized
   arrays with Python pickles, and JSON are planned for the near
   future.
@@ -104,9 +108,9 @@ where the upper bound `stop` is *not* included. Describing the slice
 using a string is often the clearest syntactically, but if more
 automation is needed (for example extracting slices in a loop) the
 alternative *table of tables* works just fine too. Elements of the
-outer table labeled `nil` indicate the entire slice. `nil` or absent
-entries on the inner table means `0`, `N`, and `1` for `start`,
-`stop`, and `stride`.
+outer table labeled `nil` indicate all values along that axis. `nil`
+or absent entries on the inner table means `0`, `N`, and `1` for
+`start`, `stop`, and `stride`.
 
 
 ## Array member functions
@@ -170,7 +174,7 @@ array of zeros with the same shape and data type is returned.
 Returns the complex conjugate of an array. If it is not complex, then
 a simple copy of the array is returned.
 
-### array:copy(newshape)
+### array:copy()
 ***
 Returns a deep-copy of the array.
 
