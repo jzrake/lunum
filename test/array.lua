@@ -131,6 +131,13 @@ local function test11()
    print("A >= A ? ", A:ge(B))
 end
 
+local function test12()
+   print "testing type flags"
+   local C = lunum.array({1,2,3}, 'd')
+   print("double  ?= ", C:dtype())
+   print("complex ?= ", C:astype('z'):dtype())
+   print("[ 1+0j, 2+0j, 3+0j ] ?= ", C:astype('z'))
+end
 
 test1()
 test2()
@@ -144,5 +151,5 @@ test8()
 test9()
 test10()
 
-
 test11()
+test12()

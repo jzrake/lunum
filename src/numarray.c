@@ -34,8 +34,24 @@ char *array_typename(enum ArrayType T)
   case ARRAY_TYPE_DOUBLE  : return "double";
   case ARRAY_TYPE_COMPLEX : return "complex";
   }
-  return "unknown array type";
+  return NULL; // indicates invalid type
 }
+
+enum ArrayType array_typeflag(char c)
+{
+  switch (c) {
+  case 'b': return ARRAY_TYPE_BOOL;
+  case 'c': return ARRAY_TYPE_CHAR;
+  case 's': return ARRAY_TYPE_SHORT;
+  case 'i': return ARRAY_TYPE_INT;
+  case 'l': return ARRAY_TYPE_LONG;
+  case 'f': return ARRAY_TYPE_FLOAT;
+  case 'd': return ARRAY_TYPE_DOUBLE;
+  case 'z': return ARRAY_TYPE_COMPLEX;
+  }
+  return -1; // indicates invalid type
+}
+
 
 struct Array array_new_zeros(int N, enum ArrayType T)
 {
@@ -318,3 +334,93 @@ void array_assign_from_array(struct Array *A, const struct Array *B)
   }
 }
 
+struct Array array_new_from_slice(const struct Array *B1,
+				  int *start, int *stop, int *skip, int Nd)
+// -----------------------------------------------------------------------------
+// Extracts a slice from B1, and returns it as the contiguous array 'B0'
+// -----------------------------------------------------------------------------
+// @start : starting indices into B1
+// @stop  : upper bound on selection (non-inclusive)
+// @skip  : distance between entries of B1 along each axis
+// @Nd    : the number of axes in each array
+// -----------------------------------------------------------------------------
+{
+
+  int *J = (int*) malloc(Nd*sizeof(int)); // current indices into B1
+  int *N = (int*) malloc(Nd*sizeof(int)); // number of elements to select
+  int *S = (int*) malloc(Nd*sizeof(int)); // strides (in memory) along each axis
+
+  int ntot = 1;
+
+  for (int d=0; d<Nd; ++d) {
+    J[d] = 0;
+    N[d] = 1 + (stop[d] - start[d] - 1) / skip[d];
+    ntot *= N[d];
+  }
+
+  S[Nd-1] = 1;
+  for (int d=Nd-2; d>=0; --d) S[d] = S[d+1] * B1->shape[d+1];
+
+
+  struct Array B0 = array_new_zeros(ntot, B1->dtype);
+  array_resize(&B0, N, Nd);
+  int sizeof_T = array_sizeof(B0.dtype);
+  int m = 0; // indexes into B0, advanced uniformly
+
+
+  char *b0 = (char*) B0 .data;
+  char *b1 = (char*) B1->data;
+
+
+  while (J[0] < N[0]) {
+
+    int M = 0;
+    for (int d=0; d<Nd; ++d) M += (J[d] * skip[d] + start[d]) * S[d];
+
+    // ----- use the indices m,M -----
+    memcpy(b0 + (m++)*sizeof_T, b1 + M*sizeof_T, sizeof_T);
+    // -----                 -----
+
+    ++J[Nd-1];
+    for (int d=Nd-1; d!=0; --d) {
+      if (J[d] == N[d]) {
+	J[d] = 0;
+	++J[d-1];
+      }
+    }
+  }
+
+  free(J);
+  free(N);
+  free(S);
+
+  return B0;
+}
+
+struct Array array_new_from_mask(const struct Array *B1, struct Array *M)
+// -----------------------------------------------------------------------------
+// Extracts the indices of B1 for which M is true, and returns a 1d-array
+// -----------------------------------------------------------------------------
+// @M : Array of bool's, must have the same size as B1
+// -----------------------------------------------------------------------------
+{
+  int sizeof_T = array_sizeof(B1->dtype);
+
+  char *b0 = (char*) malloc(sizeof_T);
+  char *b1 = (char*) B1->data;
+
+  int m = 0;
+
+  for (int n=0; n<B1->size; ++n) {
+    if (((Bool*)M->data)[n]) {
+      b0 = (char*) realloc(b0, (++m)*sizeof(double));
+      memcpy(b0 + (m-1)*sizeof_T, b1 + n*sizeof_T, sizeof_T);
+    }
+  }
+
+  struct Array B0 = array_new_zeros(m, B1->dtype);
+  memcpy(B0.data, b0, m*sizeof_T);
+  free(b0);
+
+  return B0;
+}
