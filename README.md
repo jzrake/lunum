@@ -1,6 +1,5 @@
 
 
-
 # Introduction
 
 Lunum ('lua' + 'number') is a numeric extension for the Lua
@@ -39,7 +38,7 @@ stack, and obtaining them from the stack.
 * Arrays of arbitrary dimension, and a growing subset of the
   Numpy-style array manipulation features.
 
-* Broadcasting of differently shaped arraysis not yet
+* Broadcasting of differently shaped arrays is not yet
   supported. Presently, all operation must be between arrays of the
   same shape, or between arrays and scalars.
 
@@ -91,17 +90,17 @@ same convention as Numpy, but requires a slightly different syntax
 since Lua does not allow `:`'s or `,`'s inside square brackets. It is
 easiest to demonstrate with a few examples.
 
-    local A = lunum.range(800):reshape{20,10,4} # (20 x 10 x 4) array of int's
+    local A = lunum.range(800):reshape{20,10,4} -- (20 x 10 x 4) array of int's
 
-    # All equivalent ways of extracting a 1d slice along the second axis:
+    -- All equivalent ways of extracting a 1d slice along the second axis:
     local B = A[{10,nil,1}]
     local C = A[{10,{},1}]
     local D = A['10,:,1'] # Using a string to describe the slice
 
-    # Ranges and strides are also supported. These all generate the same 3d array:
-    local E = A[{{0,10},nil,{0,4,2}}]
-    local F = A[{{nil,nil,4},{},{0,4,2}}]
-    local G = A['::4,:,0:4:2']
+    -- Ranges and strides are also supported. These all generate the same 3d array:
+    local E = A[{{  0,20 ,4}, nil, {0,4,2}}]
+    local F = A[{{nil,nil,4},  {}, {0,4,2}}]
+    local G = A['::4, :, 0:4:2'] -- slice descriptions ignore white-space
 
 Range selections are all done using the `start:stop:skip` convention,
 where the upper bound `stop` is *not* included. Describing the slice
